@@ -1,0 +1,149 @@
+/* nav.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+    /* Brand Colors extracted from Nairobi Forensics Logo */
+    --brand-navy: #050A30;    /* The main dark blue from the logo */
+    --brand-red: #D32F2F;     /* The bright red from the squares and tagline */
+    --brand-green: #006400;   /* The green from the squares */
+    --brand-black: #1A1A1A;   /* The black from the squares */
+    
+    /* UI Variables */
+    --text-color: #ffffff;
+    --primary-color: var(--brand-red); /* Hover color set to Brand Red */
+    --glass-bg: rgba(5, 10, 48, 0.85); /* Brand Navy with 85% opacity for the glass effect */
+}
+
+.primary-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px); /* Glass effect */
+    -webkit-backdrop-filter: blur(10px); /* Safari support */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    z-index: 1000;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    /* Subtle border to separate from the hero video */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+/* --- LOGO --- */
+.logo {
+    cursor: pointer; /* Shows user logo is clickable */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.logo:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+}
+
+.logo img {
+    height: 50px; /* Adjust based on logo aspect ratio */
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* --- NAV MENU --- */
+.nav-menu ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- NAV LINKS (Now Buttons) --- */
+.nav-link {
+    /* Reset default button styles */
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    
+    /* Link styling */
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease, transform 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Hover effect using the Brand Red */
+.nav-link:hover {
+    color: var(--primary-color);
+    transform: translateY(-1px); /* Subtle lift on hover */
+}
+
+/* Focus state for accessibility */
+.nav-link:focus-visible {
+    outline: 2px solid var(--brand-red);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+/* --- MOBILE MENU ICON --- */
+.menu-icon {
+    display: none;
+    color: var(--text-color);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.menu-icon:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* --- RESPONSIVE (Mobile/Tablet) --- */
+@media screen and (max-width: 768px) {
+    .menu-icon {
+        display: block;
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 80px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 80px);
+        /* Solid Brand Navy background for mobile menu */
+        background: rgba(5, 10, 48, 0.98); 
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        transition: 0.4s ease-in-out;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-menu ul {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+    }
+    
+    .nav-link {
+        font-size: 1.2rem; /* Slightly larger text on mobile for easier tapping */
+    }
+}

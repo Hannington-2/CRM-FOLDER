@@ -1,0 +1,84 @@
+/* communications.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+.communications-page {
+    padding: 30px;
+    font-family: 'Montserrat', sans-serif;
+    background: #f9fafb;
+    min-height: calc(100vh - 70px);
+}
+
+.communications-page .page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: #111827;
+}
+
+.communications-page .page-header p {
+    color: #6b7280;
+    margin: 0 0 30px;
+    font-size: 0.9rem;
+}
+
+.comm-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.comm-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+    text-align: center;
+}
+
+.comm-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    margin: 0 auto 20px;
+}
+
+.comm-icon.email { background: #3b82f6; }
+.comm-icon.whatsapp { background: #25d366; }
+.comm-icon.sms { background: #8b5cf6; }
+
+.comm-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px;
+}
+
+.comm-card p {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 20px;
+}
+
+.coming-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .communications-page { padding: 20px 15px; }
+}

@@ -1,0 +1,108 @@
+/* footer.css */
+
+.hero-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Above the hero content and media */
+    background: rgba(5, 10, 48, 0.6); /* Brand Navy with transparency */
+    backdrop-filter: blur(8px); /* Glass effect */
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 5%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* --- Left Side (Copyright) --- */
+.footer-left p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* --- Right Side (Developer & Contact) --- */
+.footer-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.developed-by {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.developed-by .icon {
+    color: var(--brand-red, #D32F2F); /* Uses your brand red */
+}
+
+.brand-link {
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.brand-link:hover {
+    color: var(--brand-red, #D32F2F);
+    text-decoration: underline;
+}
+
+/* Contact Links Row */
+.contact-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.contact-links a {
+    color: #ffffff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.contact-links a:hover {
+    color: var(--brand-red, #D32F2F); /* Uses your brand red */
+}
+
+/* --- Responsive Mobile Styles --- */
+@media screen and (max-width: 768px) {
+    .hero-footer {
+        padding: 15px 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .footer-right {
+        align-items: center;
+    }
+
+    .contact-links {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 5px;
+    }
+}

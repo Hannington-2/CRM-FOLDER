@@ -1,0 +1,297 @@
+/* login.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+:root {
+    --brand-navy: #050A30;    
+    --brand-red: #D32F2F;     
+    --text-dark: #333333;
+    --text-light: #777777;
+    --input-bg: #f5f5f5;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.login-page {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+}
+
+/* --- LEFT SIDE (Image & Overlay) --- */
+.login-left {
+    flex: 1;
+    position: relative;
+    /* Replace the URL below with your actual staff image path if desired */
+    background-image: url('../../assets/company staff.webp'); 
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    padding: 0 10%;
+}
+
+/* Error Message */
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+    padding: 12px 15px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Dark gradient overlay to make text readable */
+.login-left::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(5, 10, 48, 0.9) 0%,
+        rgba(5, 10, 48, 0.4) 100%
+    );
+}
+
+.login-left-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    max-width: 500px;
+}
+
+.login-left-content h1 {
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.login-left-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #e0e0e0;
+    margin-bottom: 40px;
+}
+
+/* Social Icons */
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icons a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.social-icons a:hover {
+    background: var(--brand-red);
+    transform: translateY(-3px);
+}
+
+/* --- RIGHT SIDE (Form) --- */
+.login-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 40px;
+    position: relative;
+}
+
+.back-home {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    text-decoration: none;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.back-home:hover {
+    color: var(--brand-navy);
+}
+
+.login-form-wrapper {
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-form-wrapper h2 {
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 40px;
+    margin-top: 0;
+}
+
+/* Inputs */
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    background-color: var(--input-bg);
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--brand-navy);
+}
+
+/* Options (Remember Me) */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.remember-me {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.remember-me input {
+    accent-color: var(--brand-red);
+}
+
+/* Submit Button */
+.btn-login {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--brand-red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-login:hover {
+    background-color: #b02525; /* Darker red */
+}
+
+.forgot-password {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    color: var(--brand-navy);
+    text-decoration: underline;
+}
+
+/* Terms Text */
+.terms-text {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 40px;
+    line-height: 1.6;
+}
+
+.terms-text a {
+    color: var(--text-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.terms-text a:hover {
+    color: var(--brand-red);
+}
+
+/* --- RESPONSIVE MOBILE --- */
+@media screen and (max-width: 900px) {
+    .login-page {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .login-left {
+        padding: 60px 20px;
+        min-height: 40vh;
+    }
+
+    .login-left-content h1 {
+        font-size: 3rem;
+    }
+
+    .login-right {
+        padding: 60px 20px;
+    }
+    
+    .back-home {
+        top: 20px;
+        left: 20px;
+    }
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.register-link a {
+    color: var(--brand-red);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}

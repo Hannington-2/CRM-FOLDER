@@ -1,0 +1,148 @@
+/* settings.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+.settings-page {
+    padding: 30px;
+    font-family: 'Montserrat', sans-serif;
+    background: #f9fafb;
+    min-height: calc(100vh - 70px);
+}
+
+.settings-page .page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: #111827;
+}
+
+.settings-page .page-header p {
+    color: #6b7280;
+    margin: 0 0 25px;
+    font-size: 0.9rem;
+}
+
+.settings-page .panel {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.settings-page .panel-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.settings-page .panel-header h2 {
+    font-size: 1.05rem;
+    margin: 0;
+    color: #111827;
+    font-weight: 700;
+}
+
+.profile-section {
+    padding: 30px 25px;
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #050A30, #1a2470);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.profile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.row-icon {
+    font-size: 1rem;
+    color: #D32F2F;
+    width: 20px;
+}
+
+.profile-row .label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #9ca3af;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.profile-row .value {
+    display: block;
+    font-size: 0.95rem;
+    color: #111827;
+    font-weight: 600;
+}
+
+.coming-soon {
+    padding: 25px;
+}
+
+.coming-soon p {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0 0 15px;
+}
+
+.coming-soon ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.coming-soon li {
+    padding: 10px 15px;
+    background: #f9fafb;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.coming-soon li::before {
+    content: '→ ';
+    color: #D32F2F;
+    font-weight: 700;
+    margin-right: 5px;
+}
+
+@media (max-width: 640px) {
+    .profile-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .profile-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
