@@ -6,6 +6,7 @@
     font-family: 'Montserrat', sans-serif;
     background: #f9fafb;
     min-height: calc(100vh - 70px);
+    min-width: 0;
 }
 
 .receipts-page .page-header h1 {
@@ -31,7 +32,7 @@
 
 .receipts-page .search-box {
     flex: 1;
-    min-width: 250px;
+    min-width: min(250px, 100%);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -63,7 +64,8 @@
     border-radius: 12px;
     border: 1px solid #f3f4f6;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    overflow-x: auto;
+    min-width: 0;
 }
 
 .receipts-page .empty-state {
@@ -79,6 +81,7 @@
 
 .receipts-page .data-table {
     width: 100%;
+    min-width: 680px;
     border-collapse: collapse;
     font-size: 0.88rem;
 }
@@ -112,8 +115,9 @@
 .receipts-page .icon-btn {
     background: #f3f4f6;
     border: none;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     border-radius: 6px;
     cursor: pointer;
     color: #6b7280;
@@ -130,5 +134,18 @@
 }
 
 @media (max-width: 900px) {
-    .receipts-page { padding: 20px 15px; }
+    .receipts-page { padding: 20px 12px; }
+    .receipts-page .toolbar { align-items: stretch; }
+    .receipts-page .search-box { flex-basis: 100%; }
+    .receipts-page .data-table th:last-child,
+    .receipts-page .data-table td:last-child {
+        position: sticky;
+        right: 0;
+        background: #fff;
+        z-index: 1;
+    }
+    .receipts-page .data-table th:last-child {
+        background: #f9fafb;
+        z-index: 2;
+    }
 }

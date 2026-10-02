@@ -40,6 +40,7 @@ const Clients = () => {
             const q = search.toLowerCase();
             setFiltered(clients.filter(c =>
                 c.name?.toLowerCase().includes(q) ||
+                c.code?.toLowerCase().includes(q) ||
                 c.email?.toLowerCase().includes(q) ||
                 c.phone?.toLowerCase().includes(q) ||
                 c.kraPin?.toLowerCase().includes(q)
@@ -96,7 +97,7 @@ const Clients = () => {
                     <FaSearch />
                     <input
                         type="text"
-                        placeholder="Search by name, email, phone, or KRA PIN..."
+                        placeholder="Search by name, code, email, phone, or KRA PIN..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -126,6 +127,7 @@ const Clients = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Code</th>
                                 <th>Contact</th>
                                 <th>KRA PIN</th>
                                 <th>Location</th>
@@ -145,6 +147,17 @@ const Clients = () => {
                                                 <strong>{client.name}</strong>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        {client.code ? (
+                                            <span className="client-code-badge">
+                                                {client.code}
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#c62828', fontSize: '0.75rem', fontWeight: 600 }}>
+                                                No code
+                                            </span>
+                                        )}
                                     </td>
                                     <td>
                                         <div className="contact-info">

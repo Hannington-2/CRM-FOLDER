@@ -13,6 +13,12 @@
     min-width: 0;
 }
 
+.dashboard-main > :not(.topbar) {
+    width: 100%;
+    max-width: 2400px;
+    margin-inline: auto;
+}
+
 @media (max-width: 900px) {
     .dashboard-main {
         margin-left: 0;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const counterSchema = new mongoose.Schema({
-    _id: { type: String, required: true }, // e.g. "invoice-2026"
+    _id: { type: String, required: true }, // e.g. "inv-KRACU"
     sequence: { type: Number, default: 0 }
 });
 

@@ -13,6 +13,7 @@
     left: 0;
     width: 260px;
     height: 100vh;
+    height: 100dvh;
     background: var(--brand-navy);
     color: #fff;
     display: flex;
@@ -80,6 +81,7 @@
     font-weight: 600;
     transition: all 0.2s ease;
     border-left: 3px solid transparent;
+    min-height: 44px;
 }
 
 .nav-item:hover {
@@ -170,6 +172,7 @@
 /* Mobile */
 @media (max-width: 900px) {
     .sidebar {
+        width: min(260px, calc(100vw - 48px));
         transform: translateX(-100%);
     }
     .sidebar.open {

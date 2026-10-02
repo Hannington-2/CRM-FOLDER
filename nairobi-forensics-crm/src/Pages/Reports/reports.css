@@ -6,6 +6,7 @@
     font-family: 'Montserrat', sans-serif;
     background: #f9fafb;
     min-height: calc(100vh - 70px);
+    min-width: 0;
 }
 
 .reports-page .page-header {
@@ -28,7 +29,7 @@
 /* KPI Cards */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
     gap: 18px;
     margin-bottom: 25px;
 }
@@ -91,7 +92,7 @@
 /* Financial Summary + Collection */
 .financial-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
     gap: 20px;
     margin-bottom: 25px;
 }
@@ -103,6 +104,7 @@
     border: 1px solid #f3f4f6;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     padding: 25px;
+    min-width: 0;
 }
 
 .fin-header {
@@ -127,7 +129,7 @@
 
 .fin-rows {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
 }
 
@@ -154,6 +156,7 @@
     font-size: 1.2rem;
     font-weight: 800;
     color: #111827;
+    overflow-wrap: anywhere;
 }
 
 /* Collection Circle */
@@ -210,7 +213,7 @@
 /* Two column grid */
 .two-col-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     margin-bottom: 25px;
 }
@@ -222,7 +225,8 @@
     border: 1px solid #f3f4f6;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     margin-bottom: 20px;
-    overflow: hidden;
+    overflow-x: auto;
+    min-width: 0;
 }
 
 .reports-page .panel-header {
@@ -299,6 +303,7 @@
 /* Report table */
 .report-table {
     width: 100%;
+    min-width: 680px;
     border-collapse: collapse;
     font-size: 0.88rem;
 }
@@ -427,17 +432,53 @@
         grid-template-columns: 1fr;
     }
     .fin-rows {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 640px) {
-    .reports-page { padding: 20px 15px; }
+    .reports-page { padding: 20px 12px; }
+    .financial-grid,
+    .two-col-grid {
+        gap: 14px;
+    }
+    .financial-card,
+    .collection-card {
+        padding: 18px 14px;
+    }
+    .fin-rows {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .fin-value {
+        font-size: 1rem;
+    }
+    .kpi-card {
+        padding: 16px;
+    }
+    .status-list-item,
+    .method-list-item {
+        padding-inline: 14px;
+        gap: 10px;
+    }
     .report-table th, .report-table td {
         padding: 10px 12px;
         font-size: 0.78rem;
     }
     .activity-item {
         padding: 12px 15px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .reports-page {
+        padding: 40px;
+    }
+
+    .kpi-grid,
+    .financial-grid,
+    .two-col-grid {
+        gap: 24px;
+        margin-bottom: 32px;
     }
 }

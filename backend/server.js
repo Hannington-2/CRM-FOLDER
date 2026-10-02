@@ -9,6 +9,8 @@ const clientRoutes = require('./src/routes/clientRoutes');
 const invoiceRoutes = require('./src/routes/invoiceRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const receiptRoutes = require('./src/routes/receiptRoutes');
+const pushRoutes = require('./src/routes/pushRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/push', pushRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 4. Basic Test Route
 app.get('/', (req, res) => {

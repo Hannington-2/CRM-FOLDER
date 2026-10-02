@@ -15,10 +15,11 @@
 
 .login-page {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100svh;
     width: 100%;
     font-family: 'Montserrat', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 /* --- LEFT SIDE (Image & Overlay) --- */
@@ -165,6 +166,7 @@
 
 .input-group input {
     width: 100%;
+    min-height: 48px;
     padding: 15px;
     border: none;
     background-color: var(--input-bg);
@@ -205,6 +207,7 @@
 .btn-login {
     width: 100%;
     padding: 15px;
+    min-height: 48px;
     background-color: var(--brand-red);
     color: white;
     border: none;
@@ -261,8 +264,8 @@
     }
 
     .login-left {
-        padding: 60px 20px;
-        min-height: 40vh;
+        padding: 64px 20px 36px;
+        min-height: 35vh;
     }
 
     .login-left-content h1 {
@@ -270,12 +273,28 @@
     }
 
     .login-right {
-        padding: 60px 20px;
+        padding: 64px 20px 40px;
     }
     
     .back-home {
         top: 20px;
         left: 20px;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .login-left-content h1 {
+        font-size: 2.25rem;
+    }
+
+    .login-right {
+        padding-inline: 16px;
+    }
+
+    .form-options {
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
     }
 }
 

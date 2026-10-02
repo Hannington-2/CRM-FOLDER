@@ -9,6 +9,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
 
     const [form, setForm] = useState({
         name: client?.name || '',
+        code: client?.code || '',
         email: client?.email || '',
         phone: client?.phone || '',
         kraPin: client?.kraPin || '',
@@ -25,7 +26,12 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        // Uppercase the code field automatically
+        const cleanValue = name === 'code' 
+            ? value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)
+            : value;
+        setForm({ ...form, [name]: cleanValue });
     };
 
     const handleSubmit = async (e) => {
@@ -35,6 +41,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
 
         const payload = {
             name: form.name,
+            code: form.code || undefined, // Let backend auto-generate if empty
             email: form.email,
             phone: form.phone,
             kraPin: form.kraPin,
@@ -87,7 +94,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                     <div className="form-section">
                         <h3>Basic Information</h3>
                         <div className="form-row">
-                            <div className="form-group">
+                            <div className="form-group full">
                                 <label>Client Name *</label>
                                 <input
                                     name="name"
@@ -96,6 +103,25 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                                     placeholder="ABC Limited"
                                     required
                                 />
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>
+                                    Client Code {!isEditing && <span style={{ color: '#9ca3af', fontWeight: 400 }}>(auto if empty)</span>}
+                                </label>
+                                <input
+                                    name="code"
+                                    value={form.code}
+                                    onChange={handleChange}
+                                    placeholder="KRACU"
+                                    maxLength={6}
+                                    style={{ textTransform: 'uppercase', fontFamily: 'monospace' }}
+                                />
+                                <small style={{ color: '#6b7280', fontSize: '0.7rem' }}>
+                                    3-6 letters/digits. Used to prefix invoices & receipts.
+                                </small>
                             </div>
                             <div className="form-group">
                                 <label>KRA PIN</label>

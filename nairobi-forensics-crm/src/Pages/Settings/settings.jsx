@@ -56,13 +56,21 @@ const Settings = () => {
                 <div className="coming-soon">
                     <p>Additional settings are under development:</p>
                     <ul>
-                        <li>Company information</li>
+                        <li>Company information for invoice thet shall be generated  it shall be picking the company  pin from here  </li>
                         <li>User & role management</li>
-                        <li>Payment method configuration</li>
-                        <li>Invoice & receipt numbering</li>
+                        <li>Payment method configuration link that they will choose what they need to   pay with  bank card and it goes to there account   and  any other method like mpesa   </li>
+                        <li>Invoice & receipt numbering this numbering  should be  from the   kra invoice number and there is where thy get to the number </li>
                         <li>eTIMS integration</li>
-                        <li>Email & SMS templates</li>
+                        <li>Email & whatApp templates</li>
+                        <li>Rate limiter</li>
                         <li>Audit logs</li>
+                        <li>WHatapp api & email</li>
+                        <li>Create 1 account for one company then the rest are staff bey  defaualt not unless they are   assigned by  admin </li>
+                        <li>Notification on  managersphone  in the web app</li>
+
+
+
+
                     </ul>
                 </div>
             </div>

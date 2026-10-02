@@ -7,7 +7,7 @@ const generateNumber = require('../utils/generateNumber');
 exports.getInvoices = async (req, res) => {
     try {
         const invoices = await Invoice.find()
-            .populate('client', 'name email phone')
+            .populate('client', 'name email phone code')
             .sort({ createdAt: -1 });
         res.json(invoices);
     } catch (error) {
@@ -21,7 +21,7 @@ exports.getInvoices = async (req, res) => {
 exports.getInvoiceById = async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id)
-            .populate('client', 'name email phone address');
+            .populate('client', 'name email phone code address kraPin');
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
         res.json(invoice);
     } catch (error) {
@@ -36,17 +36,23 @@ exports.createInvoice = async (req, res) => {
     try {
         const { client, items, dueDate, taxRate, notes } = req.body;
 
-        // Validate client exists
-        const clientExists = await Client.findById(client);
-        if (!clientExists) return res.status(404).json({ message: 'Client not found' });
+        // Validate client
+        const clientDoc = await Client.findById(client);
+        if (!clientDoc) return res.status(404).json({ message: 'Client not found' });
+
+        if (!clientDoc.code) {
+            return res.status(400).json({
+                message: 'Client has no code. Please edit the client and add a code first.'
+            });
+        }
 
         // Validate items
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'At least one item is required' });
         }
 
-        // Generate invoice number
-        const invoiceNumber = await generateNumber('INV');
+        // Generate invoice number using client code (e.g. KRACU000001)
+        const invoiceNumber = await generateNumber('INV', clientDoc.code);
 
         const invoice = await Invoice.create({
             invoiceNumber,
@@ -73,7 +79,6 @@ exports.updateInvoice = async (req, res) => {
         const invoice = await Invoice.findById(req.params.id);
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
-        // Prevent editing of paid invoices
         if (invoice.status === 'paid') {
             return res.status(400).json({ message: 'Cannot edit a fully paid invoice' });
         }
@@ -83,8 +88,7 @@ exports.updateInvoice = async (req, res) => {
         if (taxRate !== undefined) invoice.taxRate = taxRate;
         if (items) invoice.items = items;
 
-        await invoice.save(); // Triggers pre-save recalculation
-
+        await invoice.save();
         res.json(invoice);
     } catch (error) {
         console.error(error);
@@ -99,7 +103,6 @@ exports.cancelInvoice = async (req, res) => {
         const invoice = await Invoice.findById(req.params.id);
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
-        // Prevent cancellation if payments exist
         if (invoice.totalPaid > 0) {
             return res.status(400).json({
                 message: 'Cannot cancel invoice with recorded payments'

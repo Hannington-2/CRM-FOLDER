@@ -1,6 +1,7 @@
 const Payment = require('../models/Payment');
 const Invoice = require('../models/Invoice');
 const Receipt = require('../models/Receipt');
+const Client = require('../models/Client'); // ← ADDED
 const generateNumber = require('../utils/generateNumber');
 
 // Helper: recalculate invoice totals from all active payments
@@ -35,7 +36,7 @@ const recalcInvoice = async (invoiceId) => {
 exports.getPayments = async (req, res) => {
     try {
         const payments = await Payment.find()
-            .populate('client', 'name email')
+            .populate('client', 'name email code')
             .populate('invoice', 'invoiceNumber total balance status')
             .sort({ createdAt: -1 });
         res.json(payments);
@@ -50,7 +51,7 @@ exports.getPayments = async (req, res) => {
 exports.getPaymentById = async (req, res) => {
     try {
         const payment = await Payment.findById(req.params.id)
-            .populate('client', 'name email')
+            .populate('client', 'name email code')
             .populate('invoice', 'invoiceNumber total balance status');
         if (!payment) return res.status(404).json({ message: 'Payment not found' });
         res.json(payment);
@@ -81,10 +82,14 @@ exports.createPayment = async (req, res) => {
             });
         }
 
-        // 3. Generate payment number
-        const paymentNumber = await generateNumber('PAY');
+        // 3. Look up the client to get their code
+        const clientDoc = await Client.findById(invoice.client);
+        const clientCode = clientDoc?.code || 'GEN';
 
-        // 4. Create the payment
+        // 4. Generate payment number using the client code
+        const paymentNumber = await generateNumber('PAY', clientCode);
+
+        // 5. Create the payment
         const payment = await Payment.create({
             paymentNumber,
             invoice: invoice._id,
@@ -97,11 +102,11 @@ exports.createPayment = async (req, res) => {
             recordedBy: req.user.id
         });
 
-        // 5. Recalculate invoice
+        // 6. Recalculate invoice
         const updatedInvoice = await recalcInvoice(invoice._id);
 
-        // 6. Auto-generate a receipt
-        const receiptNumber = await generateNumber('REC');
+        // 7. Auto-generate the receipt using the same client code
+        const receiptNumber = await generateNumber('REC', clientCode);
         const receipt = await Receipt.create({
             receiptNumber,
             payment: payment._id,
@@ -144,7 +149,7 @@ exports.reversePayment = async (req, res) => {
         payment.status = 'reversed';
         await payment.save();
 
-        // Mark receipt as cancelled (or delete — we'll cancel for audit)
+        // Mark receipt as cancelled
         await Receipt.findOneAndUpdate(
             { payment: payment._id },
             { $set: { cancelled: true } }

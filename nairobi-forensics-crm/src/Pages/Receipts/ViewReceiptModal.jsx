@@ -1,6 +1,6 @@
 // src/Pages/Receipts/ViewReceiptModal.jsx
 import { useState, useEffect } from 'react';
-import { FaTimes, FaPrint } from 'react-icons/fa';
+import { FaTimes, FaPrint, FaDownload } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
 import './ViewReceiptModal.css';
 
@@ -22,21 +22,32 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
         load();
     }, [receiptId]);
 
+    // Format: KSh 150,000.00
     const formatKES = (amount) =>
         `KSh ${Number(amount || 0).toLocaleString('en-KE', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;
 
+    // Format: KSh 150,000 (no decimals — for the bold AMOUNT RECEIVED)
+    const formatKESNoDecimal = (amount) =>
+        `KSh ${Number(amount || 0).toLocaleString('en-KE', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        })}`;
+
+    // Format: 28/09/2026
     const formatDate = (date) =>
         new Date(date).toLocaleDateString('en-GB', {
             day: '2-digit', month: '2-digit', year: 'numeric'
         });
 
+    // Format: 28/09/2026 13:24:58
     const formatDateTime = (date) =>
         new Date(date).toLocaleString('en-GB', {
             day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
         });
 
     const handlePrint = () => window.print();
@@ -60,11 +71,13 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
     const balanceDue = invoiceTotal - amountPaid;
     const isPaidInFull = balanceDue <= 0.01;
     const paymentMethod = (receipt.payment?.method || '').replace('_', ' ');
-    const clientName = receipt.invoice?.client?.name || receipt.client?.name || '';
 
-    // Get payment description (first item description from invoice)
+    // Payment description from invoice's first line item
     const serviceDescription = receipt.invoice?.items?.[0]?.description
         || 'Forensic Accounting and Reviews';
+
+    // For SOURCE INVOICE section — use the invoice's createdAt timestamp
+    const sourceInvoiceDate = receipt.invoice?.createdAt || receipt.invoice?.issueDate;
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
@@ -83,104 +96,103 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                 {/* RECEIPT PAPER */}
                 <div className="receipt-paper">
 
-                    {/* Header: logo + title */}
-                    <div className="receipt-title-row">
-                        <img
-                            src="/Nairobi-Forensics-LLP-Logo.webp"
-                            alt="Nairobi Forensics LLP"
-                            className="receipt-logo"
-                        />
-                        <div className="receipt-title-block">
-                            <h1 className="receipt-title">Receipt</h1>
-                            <span className="receipt-pill">Payment received</span>
+                    {/* ===== HEADER ===== */}
+                    <div className="receipt-header">
+                        {/* Logo (small, top-left) */}
+                        <div className="receipt-logo-row">
+                            <img
+                                src="/Nairobi-Forensics-LLP-Logo.webp"
+                                alt="Nairobi Forensics LLP"
+                                className="receipt-logo"
+                            />
                         </div>
-                    </div>
-                    <div className="receipt-title-rule" />
 
-                    {/* Meta strip */}
-                    <div className="receipt-meta">
-                        <div className="meta-item">
-                            <span className="field-label">Receipt no.</span>
-                            <span className="field-value">{receipt.receiptNumber}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="field-label">Date received</span>
-                            <span className="field-value">{formatDate(receipt.issuedDate)}</span>
-                        </div>
-                        <div className="meta-item meta-item-right">
-                            <span className="field-label">Method</span>
-                            <span className="field-value capitalize">{paymentMethod}</span>
-                        </div>
-                    </div>
-
-                    {/* Parties */}
-                    <div className="receipt-parties">
-                        <div>
-                            <span className="field-label">Received by</span>
-                            <p className="party-name">Nairobi Forensics Limited</p>
-                            <p className="party-name">Liability Partnership</p>
-                        </div>
-                        {clientName && (
-                            <div>
-                                <span className="field-label">Received from</span>
-                                <p className="party-name">{clientName}</p>
+                        {/* 3-column header */}
+                        <div className="receipt-header-grid">
+                            <div className="header-cell">
+                                <span className="field-label">RECEIPT NO.</span>
+                                <span className="field-value-mono">{receipt.receiptNumber}</span>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Payment for */}
-                    <span className="field-label">Payment for</span>
-                    <div className="payment-for-box">
-                        <div>
-                            <p className="payment-for">{serviceDescription}</p>
-                            <p className="payment-reference">
-                                Ref. Invoice {receipt.invoice?.invoiceNumber}
-                                {receipt.invoice?.issueDate && ` · Dated ${formatDate(receipt.invoice.issueDate)}`}
-                            </p>
-                        </div>
-                        <span className="payment-amount">{formatKES(amountPaid)}</span>
-                    </div>
-
-                    {/* Summary + amount received */}
-                    <div className="receipt-summary-row">
-                        <div className="summary-list">
-                            <span className="field-label">Summary</span>
-                            <div className="summary-row">
-                                <span className="summary-label">Invoice total</span>
-                                <span className="summary-value">{formatKES(invoiceTotal)}</span>
+                            <div className="header-cell">
+                                <span className="field-label">DATE RECEIVED</span>
+                                <span className="field-value-mono">{formatDate(receipt.issuedDate)}</span>
                             </div>
-                            <div className="summary-row">
-                                <span className="summary-label capitalize">Amount paid ({paymentMethod})</span>
-                                <span className="summary-value">{formatKES(amountPaid)}</span>
-                            </div>
-                            <div className="summary-row summary-row-bold">
-                                <span className="summary-label">Balance due</span>
-                                <span className="summary-value">{formatKES(balanceDue)}</span>
+                            <div className="header-cell">
+                                <span className="field-label">METHOD</span>
+                                <span className="field-value capitalize">{paymentMethod}</span>
                             </div>
                         </div>
-
-                        <div className="amount-received-card">
-                            <span className="highlight-label">Amount received</span>
-                            <span className="highlight-value">{formatKES(amountPaid)}</span>
-                            <span className="highlight-status">
-                                {isPaidInFull ? 'Paid in full' : 'Partially paid'} · <span className="capitalize">{paymentMethod}</span>
-                            </span>
-                        </div>
                     </div>
 
-                    {/* Source invoice */}
-                    <div className="receipt-source">
-                        <span className="field-label">Source invoice</span>
-                        <p className="source-value">
-                            {receipt.invoice?.invoiceNumber}
-                            {receipt.invoice?.issueDate && `   Dated ${formatDateTime(receipt.invoice.issueDate)}`}
+                    {/* ===== RECEIVED BY ===== */}
+                    <div className="receipt-section">
+                        <span className="field-label">RECEIVED BY</span>
+                        <p className="section-main-text">
+                            Nairobi Forensics Limited Liability Partnership
                         </p>
                     </div>
 
-                    {/* Footer */}
+                    {/* ===== PAYMENT FOR ===== */}
+                    <div className="receipt-section">
+                        <span className="field-label">PAYMENT FOR</span>
+                        <p className="section-main-text">{serviceDescription}</p>
+                        <p className="payment-amount-line">{formatKES(amountPaid)}</p>
+                        <p className="payment-reference">
+                            Ref. Invoice {receipt.invoice?.invoiceNumber}
+                            {receipt.invoice?.issueDate && ` · Dated ${formatDate(receipt.invoice.issueDate)}`}
+                        </p>
+                    </div>
+
+                    {/* ===== SUMMARY BOX ===== */}
+                    <div className="summary-box">
+                        <span className="summary-box-title">SUMMARY</span>
+
+                        <div className="summary-two-col">
+                            {/* LEFT: Line items */}
+                            <div className="summary-left">
+                                <div className="summary-line">
+                                    <span className="summary-label">Invoice total</span>
+                                    <span className="summary-value">{formatKES(invoiceTotal)}</span>
+                                </div>
+                                <div className="summary-line">
+                                    <span className="summary-label capitalize">
+                                        Amount paid ({paymentMethod})
+                                    </span>
+                                    <span className="summary-value">{formatKES(amountPaid)}</span>
+                                </div>
+                                <div className="summary-line">
+                                    <span className="summary-label">Balance due</span>
+                                    <span className="summary-value">{formatKES(balanceDue)}</span>
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Amount received highlight */}
+                            <div className="summary-right">
+                                <span className="highlight-label">AMOUNT RECEIVED</span>
+                                <span className="highlight-value">
+                                    {formatKESNoDecimal(amountPaid)}
+                                </span>
+                                <span className="highlight-status">
+                                    {isPaidInFull ? 'Paid in full' : 'Partially paid'}
+                                    {' · '}
+                                    <span className="capitalize">{paymentMethod}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ===== SOURCE INVOICE ===== */}
+                    <div className="receipt-source">
+                        <span className="field-label">SOURCE INVOICE</span>
+                        <p className="source-value">
+                            {receipt.invoice?.invoiceNumber}
+                            {sourceInvoiceDate && ` Dated ${formatDateTime(sourceInvoiceDate)}`}
+                        </p>
+                    </div>
+
+                    {/* ===== FOOTER NOTE ===== */}
                     <div className="receipt-footer-note">
                         <p>This receipt confirms payment against the invoice above.</p>
-                        {/* <p className="footer-system">Nairobi Forensics LLP</p> */}
                     </div>
                 </div>
             </div>

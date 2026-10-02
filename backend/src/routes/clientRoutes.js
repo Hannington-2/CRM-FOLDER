@@ -5,12 +5,15 @@ const {
     getClientById,
     createClient,
     updateClient,
-    deleteClient
+    deleteClient,
+    migrateClientCodes
 } = require('../controllers/clientController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// All client routes require authentication
 router.use(authMiddleware);
+
+// Migration route (place BEFORE /:id to avoid conflict)
+router.post('/migrate-codes', migrateClientCodes);
 
 router.route('/')
     .get(getClients)

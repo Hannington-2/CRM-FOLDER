@@ -6,6 +6,7 @@
     font-family: 'Montserrat', sans-serif;
     background: #f9fafb;
     min-height: calc(100vh - 70px);
+    min-width: 0;
 }
 
 .payments-page .page-header h1 {
@@ -63,7 +64,7 @@
 
 .payments-page .search-box {
     flex: 1;
-    min-width: 250px;
+    min-width: min(250px, 100%);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -106,7 +107,8 @@
     border-radius: 12px;
     border: 1px solid #f3f4f6;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    overflow-x: auto;
+    min-width: 0;
 }
 
 .payments-page .empty-state {
@@ -122,6 +124,7 @@
 
 .payments-page .data-table {
     width: 100%;
+    min-width: 700px;
     border-collapse: collapse;
     font-size: 0.88rem;
 }
@@ -159,7 +162,9 @@
 .payments-page .status-badge.cancelled { background: #e5e7eb; color: #6b7280; }
 
 @media (max-width: 900px) {
-    .payments-page { padding: 20px 15px; }
+    .payments-page { padding: 20px 12px; }
+    .payments-page .toolbar { align-items: stretch; }
+    .payments-page .search-box { flex-basis: 100%; }
     .payments-page .data-table th, .payments-page .data-table td {
         padding: 10px 12px;
         font-size: 0.78rem;

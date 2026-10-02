@@ -10,7 +10,15 @@ import staffImage from "../../assets/company staff.webp";
 
 const Hero = () => {
   const [activeSlide, setActiveSlide] = useState(0);
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
   const navigate = useNavigate(); // <-- Initialize navigation hook
+
+    useEffect(() => {
+        const breakpoint = window.matchMedia('(max-width: 768px)');
+        const updateViewport = (event) => setIsMobile(event.matches);
+        breakpoint.addEventListener('change', updateViewport);
+        return () => breakpoint.removeEventListener('change', updateViewport);
+    }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -27,8 +35,8 @@ const Hero = () => {
         <div className="hero-bg-container">
             {/* SLIDE 1: VIDEOS */}
             <div className={`slide video-slide ${activeSlide === 0 ? 'active' : ''}`}>
-                <video src={bgVideoLandscape} autoPlay loop muted playsInline className="bg-media desktop-video"/>
-                <video src={bgVideoVertical} autoPlay loop muted playsInline className="bg-media mobile-video"/>
+                <video src={isMobile ? undefined : bgVideoLandscape} autoPlay loop muted playsInline className="bg-media desktop-video"/>
+                <video src={isMobile ? bgVideoVertical : undefined} autoPlay loop muted playsInline className="bg-media mobile-video"/>
             </div>
 
             {/* SLIDE 2: STAFF IMAGE */}

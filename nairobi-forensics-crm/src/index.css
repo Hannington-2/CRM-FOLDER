@@ -106,6 +106,10 @@ img, video {
   display: block;
 }
 
+button, input, select, textarea {
+  max-width: 100%;
+}
+
 .nav-link {
     text-decoration: none;
     color: var(--text-color);

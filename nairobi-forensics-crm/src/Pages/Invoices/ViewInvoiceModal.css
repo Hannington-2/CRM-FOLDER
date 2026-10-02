@@ -1,6 +1,12 @@
 /* ViewInvoiceModal.css */
 .view-invoice-modal {
     max-width: 850px;
+    max-width: min(850px, calc(100vw - 24px));
+    max-height: min(92vh, calc(100dvh - 24px));
+}
+
+.view-invoice-modal .modal-body {
+    overflow-x: auto;
 }
 
 .header-actions {
@@ -12,8 +18,8 @@
 .icon-action {
     background: #f3f4f6;
     border: none;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 8px;
     cursor: pointer;
     color: #6b7280;
@@ -88,6 +94,7 @@
 /* Invoice items */
 .invoice-items {
     width: 100%;
+    min-width: 560px;
     border-collapse: collapse;
     margin-bottom: 20px;
     font-size: 0.88rem;
@@ -114,7 +121,7 @@
 /* Totals */
 .invoice-totals {
     margin-left: auto;
-    width: 320px;
+    width: min(320px, 100%);
     background: #f9fafb;
     padding: 18px;
     border-radius: 10px;
@@ -187,6 +194,7 @@
 
 .payment-table {
     width: 100%;
+    min-width: 500px;
     border-collapse: collapse;
     font-size: 0.85rem;
 }

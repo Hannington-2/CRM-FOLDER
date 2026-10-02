@@ -1,10 +1,9 @@
 /* ViewReceiptModal.css */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
     --navy: #181C58;
     --green: #1F8A4C;
-    --pale-green: #EAF6EE;
     --ink: #1F2340;
     --muted: #737791;
     --line: #DADCE6;
@@ -12,17 +11,20 @@
 }
 
 .receipt-modal {
-    max-width: 700px;
+    max-width: 720px;
+    max-width: min(720px, calc(100vw - 24px));
+    max-height: min(92vh, calc(100dvh - 24px));
     background: #fff;
     border-radius: 12px;
     overflow: hidden;
     padding: 0;
 }
 
-/* Toolbar (hidden when printing) */
+/* Toolbar */
 .receipt-toolbar {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 10px;
     padding: 14px 20px;
     background: var(--pale);
@@ -42,6 +44,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-height: 44px;
     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -58,7 +61,7 @@
 
 /* Receipt paper */
 .receipt-paper {
-    padding: 36px 42px 30px;
+    padding: 40px 48px 36px;
     font-family: 'Montserrat', sans-serif;
     color: var(--ink);
     background: #fff;
@@ -71,169 +74,170 @@
 /* Field labels/values */
 .field-label {
     display: block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
     color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .field-value {
     display: block;
-    font-size: 0.98rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--ink);
 }
 
-/* Title row */
-.receipt-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+.field-value-mono {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    letter-spacing: -0.3px;
+}
+
+/* ===== HEADER ===== */
+.receipt-header {
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 26px;
+}
+
+.receipt-logo-row {
+    margin-bottom: 18px;
 }
 
 .receipt-logo {
-    height: 46px;
+    height: 42px;
     width: auto;
     object-fit: contain;
 }
 
-.receipt-title-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+.receipt-header-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 24px;
 }
 
-.receipt-title {
+.header-cell {
+    min-width: 0;
+}
+
+/* ===== SECTIONS ===== */
+.receipt-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.receipt-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-main-text {
     margin: 0;
-    font-size: 1.9rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.4;
+}
+
+.payment-amount-line {
+    margin: 10px 0 6px;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--navy);
-    line-height: 1;
-}
-
-.receipt-pill {
-    background: var(--pale-green);
-    color: var(--green);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    padding: 5px 14px;
-    border-radius: 999px;
-}
-
-.receipt-title-rule {
-    height: 1.5px;
-    background: var(--navy);
-    margin: 18px 0 20px;
-}
-
-/* Meta strip */
-.receipt-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-    background: var(--pale);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 28px;
-}
-
-.meta-item-right { text-align: right; }
-
-/* Parties */
-.receipt-parties {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 26px;
-}
-
-.party-name {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1.35;
-}
-
-/* Payment for */
-.payment-for-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    background: var(--pale);
-    border-left: 3px solid var(--navy);
-    border-radius: 8px;
-    padding: 18px 20px;
-    margin: 8px 0 28px;
-}
-
-.payment-for {
-    margin: 0 0 4px;
-    font-size: 0.98rem;
-    font-weight: 700;
-    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.5px;
 }
 
 .payment-reference {
     margin: 0;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--muted);
+    font-style: italic;
 }
 
-.payment-amount {
-    font-size: 1.15rem;
+/* ===== SUMMARY BOX ===== */
+.summary-box {
+    position: relative;
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 24px 22px 22px;
+    margin: 8px 0 26px;
+    background: #fff;
+}
+
+.summary-box-title {
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: #fff;
+    padding: 0 10px;
+    font-size: 0.68rem;
     font-weight: 800;
-    color: var(--navy);
-    white-space: nowrap;
-}
-
-/* Summary + amount received */
-.receipt-summary-row {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 22px;
-    align-items: start;
-    margin-bottom: 28px;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 9px 0;
-    font-size: 0.88rem;
-    border-bottom: 1px solid var(--line);
-}
-
-.summary-row-bold .summary-label,
-.summary-row-bold .summary-value {
-    font-weight: 700;
+    letter-spacing: 1.5px;
     color: var(--ink);
+    text-transform: uppercase;
 }
 
-.summary-row:last-child { border-bottom: none; }
+.summary-two-col {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 28px;
+    align-items: stretch;
+}
 
-.summary-label { color: var(--muted); font-weight: 500; }
-.summary-value { color: var(--ink); font-weight: 600; }
-
-.amount-received-card {
-    background: var(--navy);
-    border-radius: 10px;
-    padding: 18px 20px;
+/* Left column — line items */
+.summary-left {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.88rem;
+}
+
+.summary-line:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.summary-value {
+    color: var(--ink);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+}
+
+/* Right column — highlight card */
+.summary-right {
+    background: var(--navy);
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
     gap: 6px;
     position: relative;
     overflow: hidden;
 }
 
-.amount-received-card::after {
+.summary-right::after {
     content: '';
     position: absolute;
     left: 0; right: 0; bottom: 0;
@@ -242,65 +246,66 @@
 }
 
 .highlight-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
     color: #B9C0D0;
+    text-transform: uppercase;
 }
 
 .highlight-value {
-    font-size: 1.5rem;
+    font-size: 1.55rem;
     font-weight: 800;
     color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
 }
 
 .highlight-status {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: #B9C0D0;
+    font-weight: 600;
 }
 
-/* Source invoice */
+/* ===== SOURCE INVOICE ===== */
 .receipt-source {
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    margin-bottom: 20px;
+    padding: 16px 18px;
+    background: var(--pale);
+    border-left: 4px solid var(--navy);
+    border-radius: 4px;
+    margin-bottom: 22px;
 }
 
 .source-value {
     margin: 2px 0 0;
-    font-size: 0.82rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.2px;
 }
 
-/* Footer */
+/* ===== FOOTER NOTE ===== */
 .receipt-footer-note {
-    padding-top: 16px;
+    padding-top: 18px;
     border-top: 1px solid var(--line);
+    text-align: center;
 }
 
 .receipt-footer-note p {
     margin: 0;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--muted);
+    font-style: italic;
 }
 
-.footer-system {
-    margin-top: 4px !important;
-    font-weight: 600;
-}
-
-/* Print styles */
+/* ===== PRINT ===== */
 @media print {
-    body * {
-        visibility: hidden;
-    }
+    body * { visibility: hidden; }
 
     .receipt-modal,
-    .receipt-modal * {
-        visibility: visible;
-    }
+    .receipt-modal * { visibility: visible; }
 
     .receipt-modal {
         position: absolute;
@@ -310,12 +315,13 @@
         max-width: 100%;
         box-shadow: none;
         border-radius: 0;
+        max-height: none;
     }
 
     .receipt-paper {
         max-height: none;
         overflow: visible;
-        padding: 20px;
+        padding: 15mm;
     }
 
     .no-print,
@@ -331,37 +337,34 @@
     }
 
     @page {
-        margin: 15mm;
+        size: A4;
+        margin: 0;
     }
 }
 
-/* Mobile */
+/* ===== MOBILE ===== */
 @media (max-width: 640px) {
     .receipt-paper {
         padding: 24px 20px;
     }
-    .receipt-meta {
+    .receipt-header-grid {
         grid-template-columns: 1fr;
-        text-align: left;
-    }
-    .meta-item-right { text-align: left; }
-    .receipt-parties {
-        grid-template-columns: 1fr;
-    }
-    .receipt-summary-row {
-        grid-template-columns: 1fr;
-    }
-    .payment-for-box {
-        flex-direction: column;
-        align-items: flex-start;
+        gap: 14px;
     }
     .receipt-logo {
         height: 34px;
     }
-    .receipt-title {
-        font-size: 1.4rem;
+    .summary-two-col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .summary-right {
+        padding: 16px;
     }
     .highlight-value {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
+    }
+    .payment-amount-line {
+        font-size: 1.15rem;
     }
 }

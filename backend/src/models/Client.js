@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema({
+    code: {
+        type: String,
+        required: true,
+        unique: true,
+        uppercase: true,
+        trim: true,
+        minlength: 3,
+        maxlength: 6
+    },
     name: { type: String, required: true, trim: true },
     email: { type: String, lowercase: true, trim: true },
     phone: { type: String, trim: true },
