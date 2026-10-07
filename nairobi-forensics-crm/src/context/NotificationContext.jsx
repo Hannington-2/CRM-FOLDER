@@ -1,44 +1,99 @@
 // src/context/NotificationContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { connectSocket, disconnectSocket } from '../utils/socket';
 import { apiFetch } from '../utils/api';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [toasts, setToasts] = useState([]);
+    const [permission, setPermission] = useState(
+        typeof window !== 'undefined' && 'Notification' in window
+            ? Notification.permission
+            : 'default'
+    );
+    const socketRef = useRef(null);
 
-    // Wrap load in useCallback so it can be safely used in useEffect
+    // ============ LOAD INITIAL ============
     const load = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            setLoading(true);
             const data = await apiFetch('/notifications');
             setNotifications(data);
             setUnreadCount(data.filter(n => !n.isRead).length);
         } catch (err) {
             console.error('Load notifications failed:', err);
-        } finally {
-            setLoading(false);
         }
     }, [isAuthenticated]);
 
-    // Initial load when auth state changes
-    useEffect(() => {
-        load();
-    }, [load]);
+    const showToast = useCallback((n) => {
+        const id = Date.now() + Math.random();
+        setToasts(prev => [...prev, { ...n, toastId: id }]);
 
-    // Poll every 30 seconds to stay fresh
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.toastId !== id));
+        }, 6000);
+    }, []);
+
+    const playSound = useCallback(() => {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 800;
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.2);
+        } catch {
+            // Silent fail
+        }
+    }, []);
+
     useEffect(() => {
-        if (!isAuthenticated) return;
-        const interval = setInterval(load, 30000);
-        return () => clearInterval(interval);
+        if (isAuthenticated) load();
     }, [isAuthenticated, load]);
 
-    // Mark a single notification as read
+    // ============ SOCKET CONNECTION ============
+    useEffect(() => {
+        if (!isAuthenticated || !user?.id) return;
+
+        const socket = connectSocket(user.id);
+        socketRef.current = socket;
+
+        const handleNotification = (n) => {
+            console.log('🔔 New notification received:', n);
+            setNotifications(prev => [n, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            showToast(n);
+            playSound();
+        };
+
+        socket.on('notification', handleNotification);
+
+        return () => {
+            socket.off('notification', handleNotification);
+        };
+    }, [isAuthenticated, user?.id, showToast, playSound]);
+
+    // Disconnect on logout
+    useEffect(() => {
+        if (!isAuthenticated) {
+            disconnectSocket();
+        }
+    }, [isAuthenticated]);
+
+    const dismissToast = (toastId) => {
+        setToasts(prev => prev.filter(t => t.toastId !== toastId));
+    };
+
+    // ============ ACTIONS ============
     const markAsRead = async (id) => {
         try {
             await apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
@@ -47,22 +102,20 @@ export const NotificationProvider = ({ children }) => {
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (err) {
-            console.error('markAsRead failed:', err);
+            console.error(err);
         }
     };
 
-    // Mark all as read
     const markAllAsRead = async () => {
         try {
             await apiFetch('/notifications/read-all', { method: 'PUT' });
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
         } catch (err) {
-            console.error('markAllAsRead failed:', err);
+            console.error(err);
         }
     };
 
-    // Delete one
     const deleteNotification = async (id) => {
         try {
             await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
@@ -74,34 +127,42 @@ export const NotificationProvider = ({ children }) => {
                 return prev.filter(n => n._id !== id);
             });
         } catch (err) {
-            console.error('deleteNotification failed:', err);
+            console.error(err);
         }
     };
 
-    // Clear all
     const clearAll = async () => {
         try {
             await apiFetch('/notifications/clear-all', { method: 'DELETE' });
             setNotifications([]);
             setUnreadCount(0);
         } catch (err) {
-            console.error('clearAll failed:', err);
+            console.error(err);
         }
     };
 
+    // ============ BROWSER PERMISSION ============
+    const requestPermission = async () => {
+        if (!('Notification' in window)) return false;
+        const result = await Notification.requestPermission();
+        setPermission(result);
+        return result === 'granted';
+    };
+
     return (
-        <NotificationContext.Provider
-            value={{
-                notifications,
-                unreadCount,
-                loading,
-                load,
-                markAsRead,
-                markAllAsRead,
-                deleteNotification,
-                clearAll
-            }}
-        >
+        <NotificationContext.Provider value={{
+            notifications,
+            unreadCount,
+            toasts,
+            permission,
+            requestPermission,
+            markAsRead,
+            markAllAsRead,
+            deleteNotification,
+            clearAll,
+            dismissToast,
+            refresh: load
+        }}>
             {children}
         </NotificationContext.Provider>
     );

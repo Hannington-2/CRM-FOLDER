@@ -48,7 +48,7 @@ const Settings = () => {
                     </div>
                 </div>
             </div>
-
+{/* 
             <div className="panel">
                 <div className="panel-header">
                     <h2>Coming Soon</h2>
@@ -73,7 +73,7 @@ const Settings = () => {
 
                     </ul>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

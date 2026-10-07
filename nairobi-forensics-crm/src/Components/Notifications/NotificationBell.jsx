@@ -1,10 +1,10 @@
 // src/Components/Notifications/NotificationBell.jsx
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-    FaBell, FaCheck, FaTrash, FaFileInvoiceDollar, FaMoneyBillWave,
-    FaReceipt, FaUserPlus, FaExclamationTriangle, FaSync
+    FaBell, FaCheck, FaTrash, FaFileInvoiceDollar,
+    FaMoneyBillWave, FaReceipt, FaUserPlus, FaExclamationTriangle
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationContext';
 import './NotificationBell.css';
 
@@ -50,16 +50,12 @@ const NotificationBell = () => {
     const {
         notifications,
         unreadCount,
-        loading,
-        refresh,
         markAsRead,
         markAllAsRead,
         deleteNotification,
-        clearAll,
-        sendTest
+        clearAll
     } = useNotifications();
 
-    // Close on outside click
     useEffect(() => {
         const handler = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -70,29 +66,17 @@ const NotificationBell = () => {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const handleClick = (n) => {
-        if (!n.isRead) markAsRead(n._id);
+    const handleNotificationClick = async (n) => {
+        if (!n.isRead) await markAsRead(n._id);
         if (n.link) {
             navigate(n.link);
             setOpen(false);
         }
     };
 
-    const handleTest = async () => {
-        try {
-            await sendTest();
-        } catch (err) {
-            alert('Failed to send test: ' + err.message);
-        }
-    };
-
     return (
         <div className="notification-bell" ref={dropdownRef}>
-            <button
-                className="bell-btn"
-                onClick={() => setOpen(!open)}
-                title="Notifications"
-            >
+            <button className="bell-btn" onClick={() => setOpen(!open)} title="Notifications">
                 <FaBell />
                 {unreadCount > 0 && (
                     <span className="bell-badge">
@@ -103,7 +87,6 @@ const NotificationBell = () => {
 
             {open && (
                 <div className="notification-dropdown">
-                    {/* Header */}
                     <div className="dropdown-header">
                         <div>
                             <h3>Notifications</h3>
@@ -112,55 +95,32 @@ const NotificationBell = () => {
                             )}
                         </div>
                         <div className="header-actions">
-                            <button
-                                className="header-btn"
-                                onClick={refresh}
-                                title="Refresh"
-                            >
-                                <FaSync />
-                            </button>
                             {unreadCount > 0 && (
-                                <button
-                                    className="header-btn"
-                                    onClick={markAllAsRead}
-                                    title="Mark all read"
-                                >
+                                <button className="header-btn" onClick={markAllAsRead} title="Mark all as read">
                                     <FaCheck />
                                 </button>
                             )}
                             {notifications.length > 0 && (
-                                <button
-                                    className="header-btn danger"
-                                    onClick={clearAll}
-                                    title="Clear all"
-                                >
+                                <button className="header-btn danger" onClick={clearAll} title="Clear all">
                                     <FaTrash />
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* List */}
                     <div className="dropdown-list">
-                        {loading ? (
-                            <div className="empty-notifications">
-                                <p>Loading...</p>
-                            </div>
-                        ) : notifications.length === 0 ? (
+                        {notifications.length === 0 ? (
                             <div className="empty-notifications">
                                 <FaBell />
                                 <p>You're all caught up</p>
-                                <span>Notifications will appear here</span>
-                                <button className="test-notif-btn" onClick={handleTest}>
-                                    Send test notification
-                                </button>
+                                <span>Notifications appear here when things happen</span>
                             </div>
                         ) : (
                             notifications.map(n => (
                                 <div
                                     key={n._id}
                                     className={`notification-item ${!n.isRead ? 'unread' : ''}`}
-                                    onClick={() => handleClick(n)}
+                                    onClick={() => handleNotificationClick(n)}
                                 >
                                     <div className={`notif-icon ${colorForType(n.type)}`}>
                                         {iconForType(n.type)}
@@ -184,13 +144,6 @@ const NotificationBell = () => {
                                 </div>
                             ))
                         )}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="dropdown-footer">
-                        <button className="footer-action" onClick={handleTest}>
-                            Send test notification
-                        </button>
                     </div>
                 </div>
             )}

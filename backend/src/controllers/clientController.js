@@ -1,13 +1,12 @@
 const Client = require('../models/Client');
+const notify = require('../utils/notify');
 
 // Helper: Generate a client code from the name
 const generateClientCode = (name) => {
     if (!name) return 'CLI';
-    // Take first letters of each word, uppercase, max 6 chars
     const words = String(name).trim().split(/\s+/);
     let code = words.map(w => w[0]).join('').toUpperCase();
 
-    // If only 1 word, take first 5 letters
     if (code.length < 3) {
         code = String(name).replace(/[^A-Za-z]/g, '').substring(0, 5).toUpperCase();
     }
@@ -81,6 +80,21 @@ exports.createClient = async (req, res) => {
             code: clientCode,
             createdBy: req.user.id
         });
+
+        // 🔔 Notify all staff (non-blocking)
+        notify({
+            userId: null,
+            type: 'client_added',
+            title: '👤 New Client Added',
+            message: `${client.name} (${clientCode}) has been added to the system`,
+            link: '/dashboard/clients',
+            data: {
+                clientId: client._id,
+                clientName: client.name,
+                clientCode
+            }
+        }).catch(err => console.error('Notify failed:', err.message));
+
         res.status(201).json(client);
     } catch (error) {
         console.error(error);
@@ -94,7 +108,6 @@ exports.updateClient = async (req, res) => {
     try {
         const { code, ...rest } = req.body;
 
-        // If a code is being changed, ensure it's unique
         if (code) {
             rest.code = await ensureUniqueCode(
                 code.trim().toUpperCase(),

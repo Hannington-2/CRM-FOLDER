@@ -1,16 +1,29 @@
+// src/Pages/Login/login.jsx
 import { useState } from 'react';
 import './login.css';
-import { FaFacebookF, FaArrowLeft } from "react-icons/fa";
+import { FaFacebookF, FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 import { CiLinkedin } from "react-icons/ci";
 import { VscTwitter } from "react-icons/vsc";
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
+import { publicFetch } from '../../utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Lazy initializer — reads logout reason once (no useEffect, no warnings)
+  const [error, setError] = useState(() => {
+    const reason = sessionStorage.getItem('logout_reason');
+    if (reason) {
+      sessionStorage.removeItem('logout_reason');
+      return reason;
+    }
+    return '';
+  });
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -21,32 +34,17 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const data = await publicFetch('/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+        body: { email, password, remember }
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Save to localStorage for persistence
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Update global auth context
-        login(data.user, data.token);
-
-        // Redirect to dashboard
-        navigate('/dashboard');
-      } else {
-        setError(data.message || 'Invalid email or password');
-      }
+      // Server sets HTTP-only auth cookie + CSRF cookie.
+      // We only store user object for UI.
+      login(data.user);
+      navigate('/dashboard');
     } catch (err) {
-      console.error(err);
-      setError('Cannot connect to server. Please try again later.');
+      setError(err.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -54,16 +52,13 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      
-      {/* LEFT SIDE: Welcome Text */}
       <div className="login-left">
         <div className="login-left-content">
           <h1>Welcome<br/>Back</h1>
           <p>
-            Sign in to access the Nairobi Forensics CRM Dashboard. 
+            Sign in to access the Nairobi Forensics CRM Dashboard.
             Manage clients, cases, and forensic reports securely.
           </p>
-          
           <div className="social-icons">
             <a href="#facebook" aria-label="Facebook"><FaFacebookF /></a>
             <a href="#twitter" aria-label="Twitter"><VscTwitter /></a>
@@ -72,45 +67,60 @@ const Login = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE: Login Form */}
       <div className="login-right">
         <Link to="/" className="back-home"><FaArrowLeft /> Back to Home</Link>
 
         <div className="login-form-wrapper">
           <h2>Sign in</h2>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <label htmlFor="email">Email Address</label>
-              <input 
+              <input
                 id="email"
-                type="email" 
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="info@forensicsnbi.com"
-                required 
+                required
+                autoComplete="username"
               />
             </div>
 
             <div className="input-group">
               <label htmlFor="password">Password</label>
-              <input 
-                id="password"
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required 
-              />
+              <div className="password-wrapper">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
             </div>
 
             <div className="form-options">
               <label className="remember-me">
-                <input type="checkbox" /> Remember Me
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                /> Remember Me for 7 days
               </label>
             </div>
 
-            {/* Error Message Display */}
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="btn-login" disabled={isLoading}>
@@ -128,7 +138,6 @@ const Login = () => {
           </p>
         </div>
       </div>
-
     </div>
   );
 }

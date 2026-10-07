@@ -1,12 +1,11 @@
-// backend/src/models/Notification.js
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // null = broadcast
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     type: {
         type: String,
         enum: ['invoice_created', 'payment_received', 'receipt_generated', 'client_added', 'invoice_overdue', 'system'],
-        default: 'system'
+        required: true
     },
     title: { type: String, required: true },
     message: { type: String, required: true },

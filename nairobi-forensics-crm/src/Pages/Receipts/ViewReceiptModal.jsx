@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPrint, FaDownload } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { downloadPDF } from '../../utils/pdfDownload';
 import './ViewReceiptModal.css';
 
 const ViewReceiptModal = ({ receiptId, onClose }) => {
     const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -22,27 +24,23 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
         load();
     }, [receiptId]);
 
-    // Format: KSh 150,000.00
     const formatKES = (amount) =>
         `KSh ${Number(amount || 0).toLocaleString('en-KE', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         })}`;
 
-    // Format: KSh 150,000 (no decimals — for the bold AMOUNT RECEIVED)
     const formatKESNoDecimal = (amount) =>
         `KSh ${Number(amount || 0).toLocaleString('en-KE', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         })}`;
 
-    // Format: 28/09/2026
     const formatDate = (date) =>
         new Date(date).toLocaleDateString('en-GB', {
             day: '2-digit', month: '2-digit', year: 'numeric'
         });
 
-    // Format: 28/09/2026 13:24:58
     const formatDateTime = (date) =>
         new Date(date).toLocaleString('en-GB', {
             day: '2-digit', month: '2-digit', year: 'numeric',
@@ -51,6 +49,19 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
         });
 
     const handlePrint = () => window.print();
+
+    const handleDownload = async () => {
+        if (!receipt) return;
+        setDownloading(true);
+        try {
+            await downloadPDF(
+                `/receipts/${receiptId}/pdf`,
+                `${receipt.receiptNumber || 'receipt'}.pdf`
+            );
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -72,19 +83,23 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
     const isPaidInFull = balanceDue <= 0.01;
     const paymentMethod = (receipt.payment?.method || '').replace('_', ' ');
 
-    // Payment description from invoice's first line item
     const serviceDescription = receipt.invoice?.items?.[0]?.description
         || 'Forensic Accounting and Reviews';
 
-    // For SOURCE INVOICE section — use the invoice's createdAt timestamp
     const sourceInvoiceDate = receipt.invoice?.createdAt || receipt.invoice?.issueDate;
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal receipt-modal" onClick={e => e.stopPropagation()}>
 
-                {/* Toolbar */}
                 <div className="receipt-toolbar no-print">
+                    <button
+                        className="toolbar-btn"
+                        onClick={handleDownload}
+                        disabled={downloading}
+                    >
+                        <FaDownload /> {downloading ? 'Downloading...' : 'Download PDF'}
+                    </button>
                     <button className="toolbar-btn" onClick={handlePrint}>
                         <FaPrint /> Print
                     </button>
@@ -93,12 +108,8 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                     </button>
                 </div>
 
-                {/* RECEIPT PAPER */}
                 <div className="receipt-paper">
-
-                    {/* ===== HEADER ===== */}
                     <div className="receipt-header">
-                        {/* Logo (small, top-left) */}
                         <div className="receipt-logo-row">
                             <img
                                 src="/Nairobi-Forensics-LLP-Logo.webp"
@@ -107,7 +118,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                             />
                         </div>
 
-                        {/* 3-column header */}
                         <div className="receipt-header-grid">
                             <div className="header-cell">
                                 <span className="field-label">RECEIPT NO.</span>
@@ -124,7 +134,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                         </div>
                     </div>
 
-                    {/* ===== RECEIVED BY ===== */}
                     <div className="receipt-section">
                         <span className="field-label">RECEIVED BY</span>
                         <p className="section-main-text">
@@ -132,7 +141,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                         </p>
                     </div>
 
-                    {/* ===== PAYMENT FOR ===== */}
                     <div className="receipt-section">
                         <span className="field-label">PAYMENT FOR</span>
                         <p className="section-main-text">{serviceDescription}</p>
@@ -143,12 +151,10 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                         </p>
                     </div>
 
-                    {/* ===== SUMMARY BOX ===== */}
                     <div className="summary-box">
                         <span className="summary-box-title">SUMMARY</span>
 
                         <div className="summary-two-col">
-                            {/* LEFT: Line items */}
                             <div className="summary-left">
                                 <div className="summary-line">
                                     <span className="summary-label">Invoice total</span>
@@ -166,7 +172,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                                 </div>
                             </div>
 
-                            {/* RIGHT: Amount received highlight */}
                             <div className="summary-right">
                                 <span className="highlight-label">AMOUNT RECEIVED</span>
                                 <span className="highlight-value">
@@ -181,7 +186,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                         </div>
                     </div>
 
-                    {/* ===== SOURCE INVOICE ===== */}
                     <div className="receipt-source">
                         <span className="field-label">SOURCE INVOICE</span>
                         <p className="source-value">
@@ -190,7 +194,6 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                         </p>
                     </div>
 
-                    {/* ===== FOOTER NOTE ===== */}
                     <div className="receipt-footer-note">
                         <p>This receipt confirms payment against the invoice above.</p>
                     </div>

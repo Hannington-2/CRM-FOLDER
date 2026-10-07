@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';  // ← Add
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './Components/ProtectedRoute/ProtectedRoute';
 import Nav from './Components/Navigation/nav';
 import Home from './Pages/home/home';
@@ -15,11 +15,12 @@ import Receipts from './Pages/Receipts/receipts';
 import Reports from './Pages/Reports/reports';
 import Communications from './Pages/Communications/communications';
 import Settings from './Pages/Settings/settings';
+import ToastContainer from './Components/Notifications/ToastContainer';
 
 function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>              {/* ← Wrap here */}
+      <NotificationProvider>
         <Router>
           <Routes>
             <Route path="/" element={<><Nav /><Home /></>} />
@@ -46,6 +47,8 @@ function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+
+          <ToastContainer />
         </Router>
       </NotificationProvider>
     </AuthProvider>

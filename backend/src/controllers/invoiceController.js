@@ -1,6 +1,7 @@
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const generateNumber = require('../utils/generateNumber');
+const notify = require('../utils/notify');
 
 // @desc    Get all invoices
 // @route   GET /api/invoices
@@ -36,7 +37,6 @@ exports.createInvoice = async (req, res) => {
     try {
         const { client, items, dueDate, taxRate, notes } = req.body;
 
-        // Validate client
         const clientDoc = await Client.findById(client);
         if (!clientDoc) return res.status(404).json({ message: 'Client not found' });
 
@@ -46,12 +46,10 @@ exports.createInvoice = async (req, res) => {
             });
         }
 
-        // Validate items
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'At least one item is required' });
         }
 
-        // Generate invoice number using client code (e.g. KRACU000001)
         const invoiceNumber = await generateNumber('INV', clientDoc.code);
 
         const invoice = await Invoice.create({
@@ -63,6 +61,20 @@ exports.createInvoice = async (req, res) => {
             notes,
             createdBy: req.user.id
         });
+
+        notify({
+            userId: null,
+            type: 'invoice_created',
+            title: '📄 New Invoice Created',
+            message: `${clientDoc.name} — ${invoiceNumber} for KES ${invoice.total.toLocaleString()}`,
+            link: '/dashboard/invoices',
+            data: {
+                invoiceId: invoice._id,
+                invoiceNumber,
+                amount: invoice.total,
+                clientName: clientDoc.name
+            }
+        }).catch(err => console.error('Notify failed:', err.message));
 
         res.status(201).json(invoice);
     } catch (error) {
@@ -115,5 +127,30 @@ exports.cancelInvoice = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Download invoice as PDF
+// @route   GET /api/invoices/:id/pdf
+exports.downloadInvoicePDF = async (req, res) => {
+    try {
+        const { generateInvoicePDF } = require('../services/pdfService');
+
+        const invoice = await Invoice.findById(req.params.id).populate('client');
+        if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+        const doc = generateInvoicePDF(invoice, invoice.client);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `inline; filename="${invoice.invoiceNumber}.pdf"`
+        );
+
+        doc.pipe(res);
+        doc.end();
+    } catch (error) {
+        console.error('PDF generation failed:', error);
+        res.status(500).json({ message: 'Failed to generate PDF' });
     }
 };

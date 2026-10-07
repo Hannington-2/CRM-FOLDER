@@ -11,6 +11,8 @@ const InstallAppPrompt = () => {
     const [installing, setInstalling] = useState(false);
 
     useEffect(() => {
+        let promptTimer = null;
+
         // Check if already installed (running as standalone PWA)
         const standalone =
             window.matchMedia('(display-mode: standalone)').matches ||
@@ -33,9 +35,9 @@ const InstallAppPrompt = () => {
             console.log('🎯 beforeinstallprompt fired! App is installable.');
             e.preventDefault(); // Prevent Chrome's mini-infobar
             setDeferredPrompt(e);
-            // Show our custom prompt
+            // Show our custom prompt in sync with the notification prompt
             if (!recentlyDismissed) {
-                setTimeout(() => setShow(true), 3000);
+                promptTimer = window.setTimeout(() => setShow(true), 3000);
             }
         };
         window.addEventListener('beforeinstallprompt', beforeInstallHandler);
@@ -50,6 +52,9 @@ const InstallAppPrompt = () => {
         window.addEventListener('appinstalled', installedHandler);
 
         return () => {
+            if (promptTimer) {
+                window.clearTimeout(promptTimer);
+            }
             window.removeEventListener('beforeinstallprompt', beforeInstallHandler);
             window.removeEventListener('appinstalled', installedHandler);
         };

@@ -1,7 +1,8 @@
 // src/Pages/Invoices/ViewInvoiceModal.jsx
 import { useState, useEffect } from 'react';
-import { FaTimes, FaPrint, FaMoneyBillWave } from 'react-icons/fa';
+import { FaTimes, FaPrint, FaMoneyBillWave, FaDownload } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { downloadPDF } from '../../utils/pdfDownload';
 import PaymentModal from './PaymentModal';
 import './ViewInvoiceModal.css';
 
@@ -10,6 +11,7 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [paymentOpen, setPaymentOpen] = useState(false);
+    const [downloading, setDownloading] = useState(false);
 
     const load = async () => {
         try {
@@ -38,6 +40,19 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
         });
 
     const handlePrint = () => window.print();
+
+    const handleDownloadPDF = async () => {
+        if (!invoice) return;
+        setDownloading(true);
+        try {
+            await downloadPDF(
+                `/invoices/${invoiceId}/pdf`,
+                `${invoice.invoiceNumber || 'invoice'}.pdf`
+            );
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const handlePaymentSuccess = () => {
         setPaymentOpen(false);
@@ -71,6 +86,14 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                             </span>
                         </div>
                         <div className="header-actions">
+                            <button
+                                className="icon-action"
+                                onClick={handleDownloadPDF}
+                                disabled={downloading}
+                                title="Download PDF"
+                            >
+                                <FaDownload />
+                            </button>
                             <button className="icon-action" onClick={handlePrint} title="Print">
                                 <FaPrint />
                             </button>

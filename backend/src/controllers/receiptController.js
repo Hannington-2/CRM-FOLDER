@@ -1,4 +1,5 @@
 const Receipt = require('../models/Receipt');
+const { generateReceiptPDF } = require('../services/pdfService');
 
 // @desc    Get all receipts
 // @route   GET /api/receipts
@@ -22,7 +23,7 @@ exports.getReceiptById = async (req, res) => {
     try {
         const receipt = await Receipt.findById(req.params.id)
             .populate('client', 'name email phone address kraPin')
-            .populate('invoice', 'invoiceNumber total items subtotal taxAmount')
+            .populate('invoice', 'invoiceNumber total items subtotal taxAmount createdAt issueDate')
             .populate('payment', 'paymentNumber method reference paymentDate');
         if (!receipt) return res.status(404).json({ message: 'Receipt not found' });
         res.json(receipt);
@@ -31,3 +32,35 @@ exports.getReceiptById = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// @desc    Download receipt as PDF
+// @route   GET /api/receipts/:id/pdf
+exports.downloadReceiptPDF = async (req, res) => {
+    try {
+        const receipt = await Receipt.findById(req.params.id)
+            .populate('client')
+            .populate('invoice')
+            .populate('payment');
+
+        if (!receipt) return res.status(404).json({ message: 'Receipt not found' });
+
+        const doc = generateReceiptPDF(
+            receipt,
+            receipt.payment,
+            receipt.invoice,
+            receipt.client
+        );
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `inline; filename="${receipt.receiptNumber}.pdf"`
+        );
+
+        doc.pipe(res);
+        doc.end();
+    } catch (error) {
+        console.error('PDF generation failed:', error);
+        res.status(500).json({ message: 'Failed to generate PDF' });
+};
+}

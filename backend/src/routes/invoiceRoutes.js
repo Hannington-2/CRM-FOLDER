@@ -5,7 +5,8 @@ const {
     getInvoiceById,
     createInvoice,
     updateInvoice,
-    cancelInvoice
+    cancelInvoice,
+    downloadInvoicePDF
 } = require('../controllers/invoiceController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -14,6 +15,9 @@ router.use(authMiddleware);
 router.route('/')
     .get(getInvoices)
     .post(createInvoice);
+
+// PDF route — MUST be before /:id
+router.get('/:id/pdf', downloadInvoicePDF);
 
 router.route('/:id')
     .get(getInvoiceById)

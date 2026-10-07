@@ -15,6 +15,8 @@ const PushPermissionPrompt = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        let promptTimer = null;
+
         const permission = getPermissionState();
         const dismissed = localStorage.getItem('push_prompt_dismissed_v7');
 
@@ -27,10 +29,16 @@ const PushPermissionPrompt = () => {
         // (the user must reset in browser settings themselves)
         if (permission === 'denied') return;
 
-        // Default → show the prompt
+        // Default → show the prompt at the same time as the install prompt
         if (!dismissed) {
-            setTimeout(() => setShow(true), 4000);
+            promptTimer = window.setTimeout(() => setShow(true), 3000);
         }
+
+        return () => {
+            if (promptTimer) {
+                window.clearTimeout(promptTimer);
+            }
+        };
     }, []);
 
     const handleEnable = async () => {

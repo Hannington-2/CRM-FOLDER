@@ -284,3 +284,143 @@
         padding-inline: 16px;
     }
 }
+/* ===== Password wrapper (input + eye icon) ===== */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 45px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #050A30;
+    background: #f3f4f6;
+}
+
+.password-toggle:focus {
+    outline: none;
+}
+
+/* ===== Password strength meter ===== */
+.password-strength {
+    margin-top: 10px;
+}
+
+.strength-bar {
+    height: 5px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease, background 0.3s ease;
+    border-radius: 3px;
+}
+
+.strength-fill.weak { width: 25%; background: #D32F2F; }
+.strength-fill.fair { width: 50%; background: #f59e0b; }
+.strength-fill.good { width: 75%; background: #3b82f6; }
+.strength-fill.strong { width: 100%; background: #10b981; }
+
+.strength-label-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.strength-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.strength-label.weak { color: #D32F2F; }
+.strength-label.fair { color: #f59e0b; }
+.strength-label.good { color: #3b82f6; }
+.strength-label.strong { color: #10b981; }
+
+/* Requirement checklist */
+.password-checks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.password-checks li {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+}
+
+.password-checks li.ok {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.password-checks li svg {
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+/* Password match indicator */
+.password-match {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.password-match.ok { color: #10b981; }
+.password-match.bad { color: #D32F2F; }
+
+/* Disabled button look */
+.btn-register:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Error message list */
+.error-message ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.error-message li {
+    font-size: 0.8rem;
+    font-weight: 500;
+}

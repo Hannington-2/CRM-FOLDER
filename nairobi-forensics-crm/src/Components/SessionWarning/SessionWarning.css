@@ -1,0 +1,207 @@
+/* SessionWarning.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+.session-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 48, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Montserrat', sans-serif;
+    animation: sessionFadeIn 0.25s ease;
+}
+
+@keyframes sessionFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.session-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 30px 24px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+    animation: sessionSlideIn 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.session-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #050A30 0%, #D32F2F 100%);
+}
+
+@keyframes sessionSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.session-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto 18px;
+    animation: sessionPulse 2s infinite;
+}
+
+@keyframes sessionPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.session-modal h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 10px;
+}
+
+.session-modal p {
+    font-size: 0.88rem;
+    color: #6b7280;
+    line-height: 1.55;
+    margin: 0 0 22px;
+}
+
+.session-modal p strong {
+    color: #D32F2F;
+    font-weight: 700;
+}
+
+/* Countdown circle */
+.session-countdown {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 24px;
+}
+
+.session-countdown svg {
+    width: 100%;
+    height: 100%;
+}
+
+.countdown-track {
+    stroke: #f3f4f6;
+}
+
+.countdown-progress {
+    stroke: #D32F2F;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s linear;
+}
+
+.countdown-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.countdown-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.countdown-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9ca3af;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Buttons */
+.session-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.session-btn-ghost,
+.session-btn-primary {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.session-btn-ghost {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.session-btn-ghost:hover {
+    background: #e5e7eb;
+}
+
+.session-btn-primary {
+    background: #D32F2F;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35);
+}
+
+.session-btn-primary:hover {
+    background: #b02525;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(211, 47, 47, 0.45);
+}
+
+.session-note {
+    font-size: 0.72rem !important;
+    color: #9ca3af !important;
+    margin-top: 18px !important;
+    margin-bottom: 0 !important;
+    font-style: italic;
+}
+
+@media (max-width: 480px) {
+    .session-modal {
+        padding: 26px 22px 20px;
+    }
+    .session-actions {
+        flex-direction: column-reverse;
+    }
+    .session-btn-ghost,
+    .session-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}

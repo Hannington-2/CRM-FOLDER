@@ -1,8 +1,9 @@
 const Payment = require('../models/Payment');
 const Invoice = require('../models/Invoice');
 const Receipt = require('../models/Receipt');
-const Client = require('../models/Client'); // ← ADDED
+const Client = require('../models/Client');
 const generateNumber = require('../utils/generateNumber');
+const notify = require('../utils/notify');
 
 // Helper: recalculate invoice totals from all active payments
 const recalcInvoice = async (invoiceId) => {
@@ -115,6 +116,37 @@ exports.createPayment = async (req, res) => {
             amount,
             issuedBy: req.user.id
         });
+
+        // 🔔 Notify #1 — Payment received (non-blocking)
+        notify({
+            userId: null,
+            type: 'payment_received',
+            title: '💰 Payment Received',
+            message: `${clientDoc?.name || 'Client'} paid KES ${amount.toLocaleString()} (${paymentNumber})`,
+            link: '/dashboard/payments',
+            data: {
+                paymentId: payment._id,
+                paymentNumber,
+                amount,
+                invoiceNumber: invoice.invoiceNumber,
+                clientName: clientDoc?.name
+            }
+        }).catch(err => console.error('Notify #1 failed:', err.message));
+
+        // 🔔 Notify #2 — Receipt generated (non-blocking)
+        notify({
+            userId: null,
+            type: 'receipt_generated',
+            title: '🧾 Receipt Generated',
+            message: `${receiptNumber} issued to ${clientDoc?.name || 'client'}`,
+            link: '/dashboard/receipts',
+            data: {
+                receiptId: receipt._id,
+                receiptNumber,
+                amount,
+                clientName: clientDoc?.name
+            }
+        }).catch(err => console.error('Notify #2 failed:', err.message));
 
         res.status(201).json({
             payment,

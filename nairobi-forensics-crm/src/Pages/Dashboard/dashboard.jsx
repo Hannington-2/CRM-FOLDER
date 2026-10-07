@@ -118,7 +118,7 @@ const Dashboard = () => {
             {/* ===== WELCOME BANNER ===== */}
             <div className="welcome-banner">
                 <div className="welcome-text">
-                    <h1>{getGreeting()}, {getFirstName()} 👋</h1>
+                    <h1>{getGreeting()}, {getFirstName()} </h1>
                     <p>Here's what's happening with your firm today.</p>
                 </div>
                 <div className="welcome-actions">
