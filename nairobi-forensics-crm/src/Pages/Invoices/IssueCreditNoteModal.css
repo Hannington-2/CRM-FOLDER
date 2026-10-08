@@ -1,0 +1,212 @@
+/* IssueCreditNoteModal.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+.credit-note-modal {
+    max-width: 560px;
+}
+
+.credit-note-subtitle {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Warning banner */
+.credit-note-warning {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.credit-note-warning svg {
+    color: #b45309;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.credit-note-warning strong {
+    display: block;
+    font-size: 0.85rem;
+    color: #78350f;
+    margin-bottom: 3px;
+}
+
+.credit-note-warning p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+/* Summary block */
+.credit-note-summary {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    border: 1px solid #f3f4f6;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.88rem;
+    color: #4b5563;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-row strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-row.muted {
+    color: #9ca3af;
+    font-size: 0.82rem;
+}
+
+.summary-row.muted strong {
+    color: #9ca3af;
+}
+
+.summary-row.highlight {
+    border-top: 2px solid #e5e7eb;
+    padding-top: 12px;
+    margin-top: 6px;
+    color: #D32F2F;
+    font-weight: 700;
+}
+
+.summary-row.highlight strong {
+    color: #D32F2F;
+    font-size: 1rem;
+}
+
+/* Input groups */
+.credit-note-modal .input-group {
+    margin-bottom: 16px;
+}
+
+.credit-note-modal .input-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.credit-note-modal .input-group input,
+.credit-note-modal .input-group select,
+.credit-note-modal .input-group textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #374151;
+    transition: all 0.2s ease;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.credit-note-modal .input-group input:focus,
+.credit-note-modal .input-group select:focus,
+.credit-note-modal .input-group textarea:focus {
+    outline: none;
+    border-color: #050A30;
+    box-shadow: 0 0 0 3px rgba(5, 10, 48, 0.08);
+}
+
+.credit-note-modal .input-group textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.field-hint {
+    display: block;
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Preview */
+.credit-note-preview {
+    background: linear-gradient(135deg, #050A30 0%, #1a2470 100%);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #fff;
+}
+
+.credit-note-preview span {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 700;
+}
+
+.preview-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+/* Error state */
+.credit-note-error {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-left: 4px solid #D32F2F;
+    margin-bottom: 16px;
+}
+
+/* Danger button */
+.btn-danger {
+    padding: 12px 22px;
+    border-radius: 8px;
+    background: #D32F2F;
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #b02525;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35);
+}
+
+.btn-danger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}

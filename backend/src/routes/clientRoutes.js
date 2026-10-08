@@ -1,3 +1,4 @@
+// backend/src/routes/clientRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -6,18 +7,22 @@ const {
     createClient,
     updateClient,
     deleteClient,
-    migrateClientCodes
+    migrateClientCodes,
+    getClientStatement
 } = require('../controllers/clientController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
-// Migration route (place BEFORE /:id to avoid conflict)
+// Migration route — before /:id
 router.post('/migrate-codes', migrateClientCodes);
 
 router.route('/')
     .get(getClients)
     .post(createClient);
+
+// Statement route — before /:id
+router.get('/:id/statement', getClientStatement);
 
 router.route('/:id')
     .get(getClientById)

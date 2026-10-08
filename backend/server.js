@@ -20,6 +20,7 @@ const receiptRoutes = require('./src/routes/receiptRoutes');
 const communicationRoutes = require('./src/routes/communicationRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const pushRoutes = require('./src/routes/pushRoutes');
+const creditNoteRoutes = require('./src/routes/creditNoteRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -219,6 +220,7 @@ app.use('/api/receipts', receiptRoutes);
 app.use('/api/communications', communicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/credit-notes', creditNoteRoutes);
 
 // ===== HEALTH CHECK =====
 app.get('/', (req, res) => {

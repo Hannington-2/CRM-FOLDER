@@ -1,27 +1,27 @@
+// backend/src/models/Invoice.js
 const mongoose = require('mongoose');
 
 const invoiceItemSchema = new mongoose.Schema({
     description: { type: String, required: true },
     quantity: { type: Number, required: true, default: 1, min: 0 },
     unitPrice: { type: Number, required: true, min: 0 },
-    amount: { type: Number, default: 0, min: 0 } // quantity * unitPrice
+    amount: { type: Number, default: 0, min: 0 }
 }, { _id: false });
 
 const invoiceSchema = new mongoose.Schema({
     invoiceNumber: { type: String, required: true, unique: true },
     client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
-
     issueDate: { type: Date, default: Date.now },
     dueDate: { type: Date, required: true },
-
     items: [invoiceItemSchema],
-
     subtotal: { type: Number, required: true, default: 0 },
-    taxRate: { type: Number, default: 16 }, // 16% VAT in Kenya
+    taxRate: { type: Number, default: 16 },
     taxAmount: { type: Number, default: 0 },
     total: { type: Number, required: true, default: 0 },
 
-    // Derived/calculated fields (updated by Payment controller):
+    // ===== DERIVED FIELDS =====
+    totalCredited: { type: Number, default: 0 },   // sum of active credit notes
+    netTotal: { type: Number, default: 0 },        // total - totalCredited
     totalPaid: { type: Number, default: 0 },
     balance: { type: Number, default: 0 },
 
@@ -30,12 +30,10 @@ const invoiceSchema = new mongoose.Schema({
         enum: ['unpaid', 'partially_paid', 'paid', 'overdue', 'cancelled'],
         default: 'unpaid'
     },
-
     notes: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-// Auto-calculate derived fields before save
 // Auto-calculate derived fields before save
 invoiceSchema.pre('save', function () {
     // Recalculate item amounts
@@ -49,11 +47,14 @@ invoiceSchema.pre('save', function () {
     // Tax
     this.taxAmount = (this.subtotal * (this.taxRate || 0)) / 100;
 
-    // Total
+    // Total (before credits)
     this.total = this.subtotal + this.taxAmount;
 
+    // Net total (after credits)
+    this.netTotal = Math.max(0, this.total - (this.totalCredited || 0));
+
     // Balance
-    this.balance = Math.max(0, this.total - (this.totalPaid || 0));
+    this.balance = Math.max(0, this.netTotal - (this.totalPaid || 0));
 
     // Status
     if (this.status !== 'cancelled') {

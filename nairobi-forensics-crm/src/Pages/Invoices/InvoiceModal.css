@@ -369,3 +369,112 @@
         flex-wrap: wrap;
     }
 }
+/* ===== Credit Note totals ===== */
+.total-line.credit-note-line {
+    color: #D32F2F;
+    font-weight: 600;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.total-line.credit-note-line span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.total-line.net-total {
+    background: #fef2f2;
+    margin: 8px -8px 4px;
+    padding: 10px 8px;
+    border-radius: 6px;
+    font-weight: 800;
+    color: #991b1b;
+}
+
+.total-line.net-total span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+}
+
+/* ===== Credit Notes Section ===== */
+.credit-notes-section {
+    margin-top: 25px;
+    padding: 18px;
+    background: #fef2f2;
+    border-radius: 10px;
+    border-left: 4px solid #D32F2F;
+}
+
+.credit-notes-section h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.credit-notes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.credit-notes-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #991b1b;
+    font-weight: 700;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(211, 47, 47, 0.2);
+}
+
+.credit-notes-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(211, 47, 47, 0.1);
+    color: #374151;
+}
+
+.credit-notes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.credit-amount {
+    color: #991b1b;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== Invoice footer buttons ===== */
+.invoice-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-outline-danger {
+    padding: 12px 20px;
+    border-radius: 8px;
+    background: transparent;
+    color: #D32F2F;
+    border: 2px solid #D32F2F;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-danger:hover {
+    background: #D32F2F;
+    color: #fff;
+    transform: translateY(-1px);
+}

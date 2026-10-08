@@ -1,3 +1,4 @@
+// backend/src/controllers/paymentController.js
 const Payment = require('../models/Payment');
 const Invoice = require('../models/Invoice');
 const Receipt = require('../models/Receipt');
@@ -10,7 +11,6 @@ const recalcInvoice = async (invoiceId) => {
     const invoice = await Invoice.findById(invoiceId);
     if (!invoice) return null;
 
-    // Sum all active payments for this invoice
     const result = await Payment.aggregate([
         { $match: { invoice: invoice._id, status: 'active' } },
         { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -18,9 +18,11 @@ const recalcInvoice = async (invoiceId) => {
 
     const totalPaid = result[0]?.total || 0;
     invoice.totalPaid = totalPaid;
-    invoice.balance = Math.max(0, invoice.total - totalPaid);
 
-    // Update status
+    // Balance is based on NET total (after credits)
+    const netTotal = invoice.netTotal || invoice.total;
+    invoice.balance = Math.max(0, netTotal - totalPaid);
+
     if (invoice.status !== 'cancelled') {
         if (invoice.balance <= 0) invoice.status = 'paid';
         else if (invoice.totalPaid > 0) invoice.status = 'partially_paid';
@@ -68,34 +70,33 @@ exports.createPayment = async (req, res) => {
     try {
         const { invoice: invoiceId, amount, method, reference, notes, paymentDate } = req.body;
 
-        // 1. Find the invoice
+        // 1. Find invoice
         const invoice = await Invoice.findById(invoiceId);
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
-
         if (invoice.status === 'cancelled') {
             return res.status(400).json({ message: 'Cannot pay a cancelled invoice' });
         }
 
-        // 2. Prevent overpayment
-        if (amount > invoice.balance) {
-            return res.status(400).json({
-                message: `Payment exceeds outstanding balance. Outstanding: KES ${invoice.balance.toLocaleString()}, Entered: KES ${amount.toLocaleString()}`
-            });
+        // 2. Load client
+        const clientDoc = await Client.findById(invoice.client);
+        if (!clientDoc) return res.status(404).json({ message: 'Client not found' });
+        const clientCode = clientDoc.code || 'GEN';
+
+        // 3. Validate amount
+        const paymentAmount = Number(amount);
+        if (paymentAmount <= 0) {
+            return res.status(400).json({ message: 'Payment amount must be greater than zero' });
         }
 
-        // 3. Look up the client to get their code
-        const clientDoc = await Client.findById(invoice.client);
-        const clientCode = clientDoc?.code || 'GEN';
-
-        // 4. Generate payment number using the client code
+        // 4. Generate payment number
         const paymentNumber = await generateNumber('PAY', clientCode);
 
-        // 5. Create the payment
+        // 5. Create payment record (full amount — even if exceeds balance)
         const payment = await Payment.create({
             paymentNumber,
             invoice: invoice._id,
             client: invoice.client,
-            amount,
+            amount: paymentAmount,
             method,
             reference,
             notes,
@@ -103,61 +104,78 @@ exports.createPayment = async (req, res) => {
             recordedBy: req.user.id
         });
 
-        // 6. Recalculate invoice
+        // 6. Recalculate invoice (caps balance at 0 automatically)
         const updatedInvoice = await recalcInvoice(invoice._id);
 
-        // 7. Auto-generate the receipt using the same client code
+        // 7. If payment exceeded the invoice balance, add excess to client credit
+        let excess = 0;
+        const invoiceBalanceBefore = invoice.balance;
+        if (paymentAmount > invoiceBalanceBefore) {
+            excess = paymentAmount - invoiceBalanceBefore;
+            clientDoc.creditBalance = (clientDoc.creditBalance || 0) + excess;
+            await clientDoc.save();
+        }
+
+        // 8. Auto-generate receipt
         const receiptNumber = await generateNumber('REC', clientCode);
         const receipt = await Receipt.create({
             receiptNumber,
             payment: payment._id,
             invoice: invoice._id,
             client: invoice.client,
-            amount,
+            amount: paymentAmount,
             issuedBy: req.user.id
         });
 
-        // 🔔 Notify #1 — Payment received (non-blocking)
+        // 9. Notifications
         notify({
             userId: null,
             type: 'payment_received',
             title: '💰 Payment Received',
-            message: `${clientDoc?.name || 'Client'} paid KES ${amount.toLocaleString()} (${paymentNumber})`,
+            message: `${clientDoc.name} paid KES ${paymentAmount.toLocaleString()} (${paymentNumber})`,
             link: '/dashboard/payments',
             data: {
                 paymentId: payment._id,
                 paymentNumber,
-                amount,
+                amount: paymentAmount,
+                excess,
                 invoiceNumber: invoice.invoiceNumber,
-                clientName: clientDoc?.name
+                clientName: clientDoc.name
             }
         }).catch(err => console.error('Notify #1 failed:', err.message));
 
-        // 🔔 Notify #2 — Receipt generated (non-blocking)
         notify({
             userId: null,
             type: 'receipt_generated',
             title: '🧾 Receipt Generated',
-            message: `${receiptNumber} issued to ${clientDoc?.name || 'client'}`,
+            message: `${receiptNumber} issued to ${clientDoc.name}`,
             link: '/dashboard/receipts',
             data: {
                 receiptId: receipt._id,
                 receiptNumber,
-                amount,
-                clientName: clientDoc?.name
+                amount: paymentAmount,
+                clientName: clientDoc.name
             }
         }).catch(err => console.error('Notify #2 failed:', err.message));
 
         res.status(201).json({
             payment,
             receipt,
+            excessCredited: excess,
             invoice: {
                 _id: updatedInvoice._id,
                 invoiceNumber: updatedInvoice.invoiceNumber,
                 total: updatedInvoice.total,
+                totalCredited: updatedInvoice.totalCredited,
+                netTotal: updatedInvoice.netTotal,
                 totalPaid: updatedInvoice.totalPaid,
                 balance: updatedInvoice.balance,
                 status: updatedInvoice.status
+            },
+            client: {
+                _id: clientDoc._id,
+                name: clientDoc.name,
+                creditBalance: clientDoc.creditBalance
             }
         });
 
@@ -173,7 +191,6 @@ exports.reversePayment = async (req, res) => {
     try {
         const payment = await Payment.findById(req.params.id);
         if (!payment) return res.status(404).json({ message: 'Payment not found' });
-
         if (payment.status === 'reversed') {
             return res.status(400).json({ message: 'Payment already reversed' });
         }
@@ -181,13 +198,11 @@ exports.reversePayment = async (req, res) => {
         payment.status = 'reversed';
         await payment.save();
 
-        // Mark receipt as cancelled
         await Receipt.findOneAndUpdate(
             { payment: payment._id },
             { $set: { cancelled: true } }
         );
 
-        // Recalculate invoice
         const updatedInvoice = await recalcInvoice(payment.invoice);
 
         res.json({

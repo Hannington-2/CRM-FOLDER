@@ -12,8 +12,7 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'staff'
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -23,17 +22,11 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  // Handle input changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    // Clear field errors when user starts typing
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     if (fieldErrors.length) setFieldErrors([]);
   };
 
-  // ====== Password strength checks (visual feedback) ======
   const checks = {
     length: formData.password.length >= 8,
     upper: /[A-Z]/.test(formData.password),
@@ -58,40 +51,31 @@ const Register = () => {
     setError('');
     setFieldErrors([]);
 
-    // ====== Client-side validation ======
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-
-    if (!checks.upper || !checks.lower || !checks.number) {
-      setError('Password must contain uppercase, lowercase, and a number');
+    if (strengthScore < 4) {
+      setError('Password does not meet all requirements');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // publicFetch handles cookies + auto-detects hostname
       await publicFetch('/auth/register', {
         method: 'POST',
         body: {
           name: formData.name,
           email: formData.email,
-          password: formData.password,
-          role: formData.role
+          password: formData.password
         }
       });
 
       alert('Account created successfully! Please login.');
       navigate('/login');
     } catch (err) {
-      // If backend returned field-level errors (weak password etc.)
       if (err.errors && Array.isArray(err.errors)) {
         setFieldErrors(err.errors);
       }
@@ -103,8 +87,6 @@ const Register = () => {
 
   return (
     <div className="register-page">
-
-      {/* LEFT SIDE */}
       <div className="register-left">
         <div className="register-left-content">
           <h1>Create<br/>Account</h1>
@@ -120,7 +102,6 @@ const Register = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="register-right">
         <Link to="/" className="back-home"><FaArrowLeft /> Back to Home</Link>
 
@@ -180,7 +161,6 @@ const Register = () => {
                 </button>
               </div>
 
-              {/* ===== Password Strength Meter ===== */}
               {formData.password && (
                 <div className="password-strength">
                   <div className="strength-bar">
@@ -192,7 +172,6 @@ const Register = () => {
                     </span>
                   </div>
 
-                  {/* Requirement checklist */}
                   <ul className="password-checks">
                     <li className={checks.length ? 'ok' : ''}>
                       {checks.length ? <FaCheck /> : <FaTimes />}
@@ -239,7 +218,6 @@ const Register = () => {
                 </button>
               </div>
 
-              {/* Match indicator */}
               {formData.confirmPassword && (
                 <div className={`password-match ${formData.password === formData.confirmPassword ? 'ok' : 'bad'}`}>
                   {formData.password === formData.confirmPassword
@@ -249,21 +227,6 @@ const Register = () => {
               )}
             </div>
 
-            <div className="input-group">
-              <label htmlFor="role">Role</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="staff">Staff</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            {/* ===== Error Display ===== */}
             {error && (
               <div className="error-message">
                 <strong>{error}</strong>
@@ -296,7 +259,6 @@ const Register = () => {
           </p>
         </div>
       </div>
-
     </div>
   );
 }

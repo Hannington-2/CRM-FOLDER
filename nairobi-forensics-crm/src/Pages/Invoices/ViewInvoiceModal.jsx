@@ -1,36 +1,75 @@
 // src/Pages/Invoices/ViewInvoiceModal.jsx
 import { useState, useEffect } from 'react';
-import { FaTimes, FaPrint, FaMoneyBillWave, FaDownload } from 'react-icons/fa';
+import { FaTimes, FaPrint, FaMoneyBillWave, FaDownload, FaMinusCircle } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
 import { downloadPDF } from '../../utils/pdfDownload';
 import PaymentModal from './PaymentModal';
+import IssueCreditNoteModal from './IssueCreditNoteModal';
 import './ViewInvoiceModal.css';
+
+// Guard helper — anything that isn't a 24-char hex string is rejected
+const isValidId = (id) => {
+    if (!id || typeof id !== 'string') return false;
+    if (id === 'undefined' || id === 'null' || id === '') return false;
+    return /^[a-fA-F0-9]{24}$/.test(id);
+};
 
 const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
     const [invoice, setInvoice] = useState(null);
     const [payments, setPayments] = useState([]);
+    const [creditNotes, setCreditNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [paymentOpen, setPaymentOpen] = useState(false);
+    const [creditOpen, setCreditOpen] = useState(false);
     const [downloading, setDownloading] = useState(false);
 
+    // ====== LOAD INVOICE + RELATED DATA ======
     const load = async () => {
+        // HARD GUARD: never fire a request with a bad ID
+        if (!isValidId(invoiceId)) {
+            console.warn('ViewInvoiceModal: refusing to load — invalid invoiceId:', invoiceId);
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
-            const [inv, allPayments] = await Promise.all([
+            const [inv, allPayments, allCredits] = await Promise.all([
                 apiFetch(`/invoices/${invoiceId}`),
-                apiFetch('/payments')
+                apiFetch('/payments'),
+                apiFetch('/credit-notes')
             ]);
+
             setInvoice(inv);
-            setPayments(allPayments.filter(p => p.invoice?._id === invoiceId && p.status === 'active'));
+            setPayments(
+                (allPayments || []).filter(
+                    p => p.invoice?._id === invoiceId && p.status === 'active'
+                )
+            );
+            setCreditNotes(
+                (allCredits || []).filter(
+                    c => c.invoice?._id === invoiceId && c.status === 'active'
+                )
+            );
         } catch (err) {
-            console.error(err);
+            console.error('Failed to load invoice:', err);
+            setInvoice(null);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { load(); }, [invoiceId]);
+    useEffect(() => {
+        console.log('🔍 ViewInvoiceModal mounted with invoiceId:', invoiceId, '(type:', typeof invoiceId, ')');
+        if (isValidId(invoiceId)) {
+            load();
+        } else {
+            setLoading(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [invoiceId]);
 
+    // ====== FORMATTERS ======
     const formatKES = (amount) =>
         `KES ${Number(amount || 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
 
@@ -39,10 +78,11 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
             day: '2-digit', month: 'short', year: 'numeric'
         });
 
+    // ====== ACTIONS ======
     const handlePrint = () => window.print();
 
     const handleDownloadPDF = async () => {
-        if (!invoice) return;
+        if (!invoice || !isValidId(invoiceId)) return;
         setDownloading(true);
         try {
             await downloadPDF(
@@ -60,6 +100,13 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
         if (onRefresh) onRefresh();
     };
 
+    const handleCreditSuccess = () => {
+        setCreditOpen(false);
+        load();
+        if (onRefresh) onRefresh();
+    };
+
+    // ====== LOADING STATE ======
     if (loading) {
         return (
             <div className="modal-backdrop" onClick={onClose}>
@@ -72,12 +119,39 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
         );
     }
 
-    if (!invoice) return null;
+    // ====== ERROR / NO INVOICE ======
+    if (!invoice) {
+        return (
+            <div className="modal-backdrop" onClick={onClose}>
+                <div className="modal view-invoice-modal" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h2>Invoice</h2>
+                        <button className="close-btn" onClick={onClose}>
+                            <FaTimes />
+                        </button>
+                    </div>
+                    <div className="modal-body">
+                        <p style={{ textAlign: 'center', padding: '40px', color: '#c62828' }}>
+                            Invoice could not be loaded. It may have been deleted or the ID is invalid.
+                        </p>
+                    </div>
+                    <div className="modal-footer">
+                        <button className="btn-secondary" onClick={onClose}>Close</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const hasCredits = (invoice.totalCredited || 0) > 0;
+    const netTotal = invoice.netTotal ?? invoice.total;
 
     return (
         <>
             <div className="modal-backdrop" onClick={onClose}>
                 <div className="modal view-invoice-modal" onClick={e => e.stopPropagation()}>
+
+                    {/* ===== HEADER ===== */}
                     <div className="modal-header">
                         <div>
                             <h2>{invoice.invoiceNumber}</h2>
@@ -103,6 +177,7 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                         </div>
                     </div>
 
+                    {/* ===== BODY ===== */}
                     <div className="modal-body">
                         {/* Invoice Header */}
                         <div className="invoice-header">
@@ -139,7 +214,7 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoice.items.map((item, i) => (
+                                {(invoice.items || []).map((item, i) => (
                                     <tr key={i}>
                                         <td>{item.description}</td>
                                         <td style={{ textAlign: 'right' }}>{item.quantity}</td>
@@ -164,15 +239,62 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                                 <span>Total</span>
                                 <span>{formatKES(invoice.total)}</span>
                             </div>
+
+                            {hasCredits && (
+                                <>
+                                    <div className="total-line credit-note-line">
+                                        <span>Credit Notes Applied</span>
+                                        <span>− {formatKES(invoice.totalCredited)}</span>
+                                    </div>
+                                    <div className="total-line net-total">
+                                        <span>Net Total</span>
+                                        <span>{formatKES(netTotal)}</span>
+                                    </div>
+                                </>
+                            )}
+
                             <div className="total-line paid">
                                 <span>Paid</span>
-                                <span>- {formatKES(invoice.totalPaid)}</span>
+                                <span>− {formatKES(invoice.totalPaid)}</span>
                             </div>
                             <div className="total-line balance">
                                 <span>Balance Due</span>
                                 <span>{formatKES(invoice.balance)}</span>
                             </div>
                         </div>
+
+                        {/* Credit Notes Section */}
+                        {creditNotes.length > 0 && (
+                            <div className="credit-notes-section">
+                                <h3>
+                                    <FaMinusCircle /> Credit Notes ({creditNotes.length})
+                                </h3>
+                                <table className="credit-notes-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Ref</th>
+                                            <th>Reason</th>
+                                            <th style={{ textAlign: 'right' }}>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {creditNotes.map(cn => (
+                                            <tr key={cn._id}>
+                                                <td>{formatDate(cn.issuedAt || cn.createdAt)}</td>
+                                                <td><strong>{cn.creditNoteNumber}</strong></td>
+                                                <td style={{ textTransform: 'capitalize' }}>
+                                                    {(cn.reason || '').replace('_', ' ')}
+                                                </td>
+                                                <td style={{ textAlign: 'right' }} className="credit-amount">
+                                                    − {formatKES(cn.amount)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
 
                         {/* Notes */}
                         {invoice.notes && (
@@ -203,7 +325,7 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                                                 <td>{formatDate(p.paymentDate)}</td>
                                                 <td><strong>{p.paymentNumber}</strong></td>
                                                 <td style={{ textTransform: 'capitalize' }}>
-                                                    {p.method.replace('_', ' ')}
+                                                    {(p.method || '').replace('_', ' ')}
                                                 </td>
                                                 <td style={{ textAlign: 'right' }}>
                                                     {formatKES(p.amount)}
@@ -216,16 +338,29 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                         </div>
                     </div>
 
-                    {/* Footer with actions */}
-                    {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-                        <div className="modal-footer">
+                    {/* ===== FOOTER ===== */}
+                    {invoice.status !== 'cancelled' && (
+                        <div className="modal-footer invoice-footer">
                             <button className="btn-secondary" onClick={onClose}>Close</button>
-                            <button
-                                className="btn-primary"
-                                onClick={() => setPaymentOpen(true)}
-                            >
-                                <FaMoneyBillWave /> Record Payment
-                            </button>
+
+                            {invoice.status !== 'paid' && (invoice.totalCredited || 0) < invoice.total && (
+                                <button
+                                    className="btn-outline-danger"
+                                    onClick={() => setCreditOpen(true)}
+                                    title="Issue a credit note to adjust the invoice"
+                                >
+                                    <FaMinusCircle /> Credit Note
+                                </button>
+                            )}
+
+                            {invoice.status !== 'paid' && (
+                                <button
+                                    className="btn-primary"
+                                    onClick={() => setPaymentOpen(true)}
+                                >
+                                    <FaMoneyBillWave /> Record Payment
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -237,6 +372,15 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                     invoice={invoice}
                     onClose={() => setPaymentOpen(false)}
                     onSuccess={handlePaymentSuccess}
+                />
+            )}
+
+            {/* Credit Note Modal */}
+            {creditOpen && (
+                <IssueCreditNoteModal
+                    invoice={invoice}
+                    onClose={() => setCreditOpen(false)}
+                    onSuccess={handleCreditSuccess}
                 />
             )}
         </>

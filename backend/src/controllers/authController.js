@@ -1,3 +1,4 @@
+// backend/src/controllers/authController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -21,8 +22,8 @@ const getCookieOptions = (remember = false) => {
         : 60 * 60 * 1000;            // 1 hour
 
     return {
-        httpOnly: true,               // ← JS CANNOT read this cookie
-        secure: isProd,                // HTTPS only in production
+        httpOnly: true,
+        secure: isProd,
         sameSite: isProd ? 'strict' : 'lax',
         maxAge,
         path: '/'
@@ -32,21 +33,21 @@ const getCookieOptions = (remember = false) => {
 const getCsrfCookieOptions = () => {
     const isProd = process.env.NODE_ENV === 'production';
     return {
-        httpOnly: false,               // JS MUST read this to send in header
+        httpOnly: false,
         secure: isProd,
         sameSite: isProd ? 'strict' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000,  // 24 hours
+        maxAge: 24 * 60 * 60 * 1000,
         path: '/'
     };
 };
 
 // ============================================
-// @desc    Register new user
+// @desc    Register new user (single-user system: always admin)
 // @route   POST /api/auth/register
 // @access  Public
 // ============================================
 exports.register = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
     const ip = req.ip;
     const userAgent = req.headers['user-agent'];
 
@@ -78,11 +79,12 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
+        // ✅ Single-user system: every account is admin
         const user = await User.create({
             name: name.trim(),
             email: email.toLowerCase().trim(),
             password: hashedPassword,
-            role: role === 'admin' ? 'admin' : 'staff'
+            role: 'admin'
         });
 
         await logSecurity({
@@ -212,10 +214,10 @@ exports.login = async (req, res) => {
             { expiresIn }
         );
 
-        // ✅ SET HTTP-ONLY COOKIE (instead of returning token in JSON)
+        // Set HTTP-only cookie
         res.cookie(AUTH_COOKIE_NAME, token, getCookieOptions(remember));
 
-        // ✅ SET CSRF TOKEN (readable by JS)
+        // Set CSRF cookie
         const csrfToken = crypto.randomBytes(32).toString('hex');
         res.cookie(CSRF_COOKIE_NAME, csrfToken, getCsrfCookieOptions());
 
@@ -227,7 +229,6 @@ exports.login = async (req, res) => {
             details: { role: user.role, remember: !!remember }
         });
 
-        // ✅ RESPONSE — NO TOKEN in body
         res.status(200).json({
             message: 'Login successful',
             expiresIn,
@@ -247,7 +248,7 @@ exports.login = async (req, res) => {
 };
 
 // ============================================
-// @desc    Get current user (from cookie)
+// @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
 // ============================================
@@ -275,13 +276,12 @@ exports.refreshCsrf = (req, res) => {
 };
 
 // ============================================
-// @desc    Logout (clear cookies)
+// @desc    Logout
 // @route   POST /api/auth/logout
 // @access  Private
 // ============================================
 exports.logout = async (req, res) => {
     try {
-        // Clear both cookies
         res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
         res.clearCookie(CSRF_COOKIE_NAME, { path: '/' });
 
@@ -295,6 +295,33 @@ exports.logout = async (req, res) => {
         }
 
         res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+// ============================================
+// @desc    Promote current user to admin (one-time helper)
+// @route   POST /api/auth/promote-me
+// @access  Private
+// ============================================
+exports.promoteMeToAdmin = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { role: 'admin' },
+            { new: true }
+        ).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json({
+            message: 'You are now an admin',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

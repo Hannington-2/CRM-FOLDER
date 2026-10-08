@@ -1,7 +1,15 @@
+// backend/src/controllers/invoiceController.js
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const generateNumber = require('../utils/generateNumber');
 const notify = require('../utils/notify');
+
+// ===== ID VALIDATION HELPER =====
+const isValidObjectId = (id) => {
+    if (!id || typeof id !== 'string') return false;
+    if (id === 'undefined' || id === 'null' || id === '') return false;
+    return /^[a-fA-F0-9]{24}$/.test(id);
+};
 
 // @desc    Get all invoices
 // @route   GET /api/invoices
@@ -21,7 +29,15 @@ exports.getInvoices = async (req, res) => {
 // @route   GET /api/invoices/:id
 exports.getInvoiceById = async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id)
+        const { id } = req.params;
+
+        // ✅ GUARD: reject invalid IDs immediately — prevents the crash
+        if (!isValidObjectId(id)) {
+            console.warn(`⚠️ getInvoiceById called with invalid ID: "${id}"`);
+            return res.status(400).json({ message: 'Invalid invoice ID' });
+        }
+
+        const invoice = await Invoice.findById(id)
             .populate('client', 'name email phone code address kraPin');
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
         res.json(invoice);
@@ -87,8 +103,13 @@ exports.createInvoice = async (req, res) => {
 // @route   PUT /api/invoices/:id
 exports.updateInvoice = async (req, res) => {
     try {
+        const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ message: 'Invalid invoice ID' });
+        }
+
         const { dueDate, notes, taxRate, items } = req.body;
-        const invoice = await Invoice.findById(req.params.id);
+        const invoice = await Invoice.findById(id);
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
         if (invoice.status === 'paid') {
@@ -112,7 +133,12 @@ exports.updateInvoice = async (req, res) => {
 // @route   DELETE /api/invoices/:id
 exports.cancelInvoice = async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id);
+        const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ message: 'Invalid invoice ID' });
+        }
+
+        const invoice = await Invoice.findById(id);
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
         if (invoice.totalPaid > 0) {
@@ -134,9 +160,13 @@ exports.cancelInvoice = async (req, res) => {
 // @route   GET /api/invoices/:id/pdf
 exports.downloadInvoicePDF = async (req, res) => {
     try {
-        const { generateInvoicePDF } = require('../services/pdfService');
+        const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ message: 'Invalid invoice ID' });
+        }
 
-        const invoice = await Invoice.findById(req.params.id).populate('client');
+        const { generateInvoicePDF } = require('../services/pdfService');
+        const invoice = await Invoice.findById(id).populate('client');
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
         const doc = generateInvoicePDF(invoice, invoice.client);

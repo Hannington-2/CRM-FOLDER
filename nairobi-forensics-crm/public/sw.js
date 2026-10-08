@@ -5,13 +5,13 @@ const CACHE_NAME = 'nf-crm-v3';
 
 // ===== INSTALL =====
 self.addEventListener('install', () => {
-    console.log('[SW] Installing...');
+    // console.log('[SW] Installing...');
     self.skipWaiting();
 });
 
 // ===== ACTIVATE =====
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activated');
+    // console.log('[SW] Activated');
     event.waitUntil(
         caches.keys().then((names) =>
             Promise.all(
@@ -97,7 +97,7 @@ self.addEventListener('fetch', (event) => {
 
 // ===== PUSH NOTIFICATION RECEIVED =====
 self.addEventListener('push', (event) => {
-    console.log('[SW] Push received');
+    // // console.log('[SW] Push received');
 
     let data = {
         title: 'Nairobi Forensics',

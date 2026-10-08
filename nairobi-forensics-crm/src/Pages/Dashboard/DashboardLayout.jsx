@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../../Components/Sidebar/Sidebar';
 import Topbar from '../../Components/Topbar/Topbar';
+import FloatingClock from '../../Components/FloatingClock/FloatingClock';
 import './dashboard-layout.css';
 
 const DashboardLayout = () => {
@@ -15,6 +16,9 @@ const DashboardLayout = () => {
                 <Topbar onMenuClick={() => setSidebarOpen(true)} />
                 <Outlet />
             </div>
+
+            {/* Floating draggable clock */}
+            <FloatingClock />
         </div>
     );
 };
