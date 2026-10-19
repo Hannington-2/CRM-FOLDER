@@ -49,7 +49,8 @@ const ALLOWED_ORIGINS = [
     'http://localhost:5174',
     'http://127.0.0.1:4173',
     'http://192.168.1.118:5173',
-    'http://192.168.1.118:4173'
+    'http://192.168.1.118:4173',
+    'https://receiptapp.vercel.app'
 ];
 
 // ===== SOCKET.IO =====
