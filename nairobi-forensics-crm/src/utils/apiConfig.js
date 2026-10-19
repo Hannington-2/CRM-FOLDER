@@ -4,6 +4,10 @@ export const getApiUrl = () => {
     const configuredUrl = import.meta.env.VITE_API_URL?.trim();
     if (configuredUrl) return normalizeUrl(configuredUrl);
 
+    if (import.meta.env.PROD) {
+        return 'https://crm-backend-2xqp.onrender.com/api';
+    }
+
     const host = window.location.hostname || 'localhost';
     return `http://${host}:5000/api`;
 };
