@@ -1,20 +1,13 @@
 // src/utils/excelDownload.js
-
-const getApiBase = () => `http://${window.location.hostname}:5000/api`;
-
-const getCsrfToken = () => {
-    const match = document.cookie.match(/(?:^|;\s*)nf_csrf=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-};
+import { getApiUrl } from './apiConfig';
 
 export const downloadExcel = async (endpoint, fallbackFilename, onStart, onFinish) => {
     if (onStart) onStart();
 
     try {
-        const response = await fetch(`${getApiBase()}${endpoint}`, {
+        const response = await fetch(`${getApiUrl()}${endpoint}`, {
             method: 'GET',
-            credentials: 'include',
-            headers: { 'X-CSRF-Token': getCsrfToken() || '' }
+            credentials: 'include'
         });
 
         if (response.status === 401) {

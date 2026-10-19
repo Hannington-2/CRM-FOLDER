@@ -13,6 +13,7 @@ const helmet = require('helmet');
 const connectDB = require('./src/config/db');
 const { sanitizeInput } = require('./src/middleware/security');
 const { apiLimiter } = require('./src/middleware/rateLimiter');
+const { verifyCsrf } = require('./src/middleware/csrf');
 // ===== REGISTER ALL MODELS =====
 require('./src/models/Organization');
 require('./src/models/User');
@@ -49,8 +50,7 @@ const ALLOWED_ORIGINS = [
     'http://localhost:5174',
     'http://127.0.0.1:4173',
     'http://192.168.1.118:5173',
-    'http://192.168.1.118:4173',
-    'https://receiptapp-delta.vercel.app/'
+    'https://receiptapp-delta.vercel.app'
 ];
 
 // ===== SOCKET.IO =====
@@ -227,6 +227,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ===== COOKIE PARSER =====
 app.use(cookieParser());
+app.use(verifyCsrf);
 
 // ===== SECURITY MIDDLEWARE =====
 app.use(hpp());

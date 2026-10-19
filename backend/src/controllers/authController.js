@@ -14,10 +14,12 @@ const LOCKOUT_DURATION_MS = 30 * 60 * 1000;
 
 const AUTH_COOKIE_NAME = 'nf_token';
 const CSRF_COOKIE_NAME = 'nf_csrf';
+const isProductionEnvironment = () =>
+    process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 // ===== COOKIE HELPERS =====
 const getCookieOptions = (remember = false) => {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = isProductionEnvironment();
     const maxAge = remember
         ? 7 * 24 * 60 * 60 * 1000
         : 60 * 60 * 1000;
@@ -25,18 +27,18 @@ const getCookieOptions = (remember = false) => {
     return {
         httpOnly: true,
         secure: isProd,
-        sameSite: isProd ? 'strict' : 'lax',
+        sameSite: isProd ? 'none' : 'lax',
         maxAge,
         path: '/'
     };
 };
 
 const getCsrfCookieOptions = () => {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = isProductionEnvironment();
     return {
         httpOnly: false,
         secure: isProd,
-        sameSite: isProd ? 'strict' : 'lax',
+        sameSite: isProd ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000,
         path: '/'
     };
@@ -253,6 +255,7 @@ exports.login = async (req, res) => {
             message: 'Login successful',
             expiresIn,
             remember: !!remember,
+            csrfToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -320,8 +323,14 @@ exports.refreshCsrf = (req, res) => {
 // ============================================
 exports.logout = async (req, res) => {
     try {
-        res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
-        res.clearCookie(CSRF_COOKIE_NAME, { path: '/' });
+        const isProd = isProductionEnvironment();
+        const clearCookieOptions = {
+            path: '/',
+            secure: isProd,
+            sameSite: isProd ? 'none' : 'lax'
+        };
+        res.clearCookie(AUTH_COOKIE_NAME, clearCookieOptions);
+        res.clearCookie(CSRF_COOKIE_NAME, clearCookieOptions);
         res.json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error(error);

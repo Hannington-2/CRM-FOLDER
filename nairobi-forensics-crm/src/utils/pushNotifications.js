@@ -1,5 +1,6 @@
 // src/utils/pushNotifications.js
 import { apiFetch } from './api';
+import { getApiUrl } from './apiConfig';
 
 const VAPID_KEY_CACHE = { key: null, fetchedAt: 0 };
 
@@ -9,7 +10,7 @@ const getVapidKey = async () => {
         return VAPID_KEY_CACHE.key;
     }
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/push/vapid-key`);
+    const res = await fetch(`${getApiUrl()}/push/vapid-key`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch VAPID key');
 
     const data = await res.json();

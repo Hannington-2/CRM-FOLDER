@@ -14,8 +14,8 @@ exports.issueCsrfToken = (req, res, next) => {
 
     res.cookie(CSRF_COOKIE_NAME, token, {
         httpOnly: false,        // Must be readable by JS to send back in header
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true',
+        sameSite: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         path: '/'
     });

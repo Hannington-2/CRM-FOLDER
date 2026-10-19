@@ -1,20 +1,5 @@
 // src/utils/pdfDownload.js
-
-/**
- * Get the API base URL (auto-detects host so it works on desktop AND phone).
- */
-const getApiBase = () => {
-    const host = window.location.hostname;
-    return `http://${host}:5000/api`;
-};
-
-/**
- * Read CSRF token from cookie (JS CAN read this one).
- */
-const getCsrfToken = () => {
-    const match = document.cookie.match(/(?:^|;\s*)nf_csrf=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-};
+import { getApiUrl } from './apiConfig';
 
 /**
  * Fetch a PDF from the backend using cookie auth.
@@ -26,17 +11,14 @@ const getCsrfToken = () => {
 const fetchPdfBlob = async (endpoint) => {
     let response;
     try {
-        response = await fetch(`${getApiBase()}${endpoint}`, {
+        response = await fetch(`${getApiUrl()}${endpoint}`, {
             method: 'GET',
-            credentials: 'include',   // sends HTTP-only auth cookie
-            headers: {
-                'X-CSRF-Token': getCsrfToken() || ''
-            }
+            credentials: 'include'   // sends HTTP-only auth cookie
         });
     } catch (networkErr) {
         // Total network failure (server down, no internet, DNS issue)
         console.error('PDF network error:', networkErr);
-        throw new Error('Cannot reach the server. Check your internet connection.');
+            throw new Error('Cannot reach the server. Check your internet connection.', { cause: networkErr });
     }
 
     // 401 = session expired

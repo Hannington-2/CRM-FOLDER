@@ -1,18 +1,7 @@
 // src/utils/api.js
-
-// ===== Auto-detect API URL based on hostname =====
-const getApiUrl = () => {
-    const host = window.location.hostname;
-    return `http://${host}:5000/api`;
-};
+import { getApiUrl, getCsrfToken, rememberCsrfToken, clearCsrfToken } from './apiConfig';
 
 const API_URL = getApiUrl();
-
-// ===== Read CSRF token from cookie (JS CAN read this one) =====
-const getCsrfToken = () => {
-    const match = document.cookie.match(/(?:^|;\s*)nf_csrf=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-};
 
 // ============================================================
 // apiFetch — authenticated requests (cookie-based)
@@ -28,8 +17,7 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     // Add CSRF token for state-changing methods
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-        const csrf = getCsrfToken();
-        if (csrf) headers['X-CSRF-Token'] = csrf;
+        headers['X-CSRF-Token'] = await getCsrfToken();
     }
 
     const config = {
@@ -69,10 +57,16 @@ export const apiFetch = async (endpoint, options = {}) => {
 // ============================================================
 export const publicFetch = async (endpoint, options = {}) => {
     const method = (options.method || 'GET').toUpperCase();
+    const headers = { 'Content-Type': 'application/json' };
+    const isAuthBootstrap = endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/register');
+
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && !isAuthBootstrap) {
+        headers['X-CSRF-Token'] = await getCsrfToken();
+    }
 
     const config = {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include'    // ← still needed to set/receive cookies
     };
 
@@ -82,6 +76,8 @@ export const publicFetch = async (endpoint, options = {}) => {
 
     const response = await fetch(`${API_URL}${endpoint}`, config);
     const data = await response.json().catch(() => ({}));
+    rememberCsrfToken(data.csrfToken);
+    if (endpoint.startsWith('/auth/logout')) clearCsrfToken();
 
     if (!response.ok) {
         const err = new Error(data.message || 'Request failed');

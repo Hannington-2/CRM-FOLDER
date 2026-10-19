@@ -1,10 +1,6 @@
 // src/utils/socket.js
 import { io } from 'socket.io-client';
-
-const getSocketUrl = () => {
-    const host = window.location.hostname;
-    return `http://${host}:5000`;
-};
+import { getSocketUrl } from './apiConfig';
 
 const SOCKET_URL = getSocketUrl();
 
