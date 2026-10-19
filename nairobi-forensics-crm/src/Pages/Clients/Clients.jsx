@@ -9,7 +9,7 @@ import { downloadExcel } from '../../utils/excelDownload';
 import { useNotifications } from '../../context/NotificationContext';
 import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import ClientModal from './ClientModal';
-import './clients.css';
+import './Clients.css';
 
 const Clients = () => {
     const [clients, setClients] = useState([]);

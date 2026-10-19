@@ -6,7 +6,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import InvoiceModal from './InvoiceModal';
 import ViewInvoiceModal from './ViewInvoiceModal';
-import './invoices.css';
+import './Invoices.css';
 
 const Invoices = () => {
     const [invoices, setInvoices] = useState([]);

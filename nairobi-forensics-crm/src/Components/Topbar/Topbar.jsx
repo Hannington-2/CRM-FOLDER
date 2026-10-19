@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../Notifications/NotificationBell';
 import PushPermissionPrompt from '../Notifications/PushPermissionPrompt';
 import InstallAppPrompt from '../Notifications/InstallAppPrompt';
-import './topbar.css';
+import './Topbar.css';
 
 const Topbar = ({ onMenuClick }) => {
     const { user } = useAuth();

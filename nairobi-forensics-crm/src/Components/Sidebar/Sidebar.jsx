@@ -5,7 +5,7 @@ import {
     FaReceipt, FaChartBar, FaCog, FaSignOutAlt, 
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import './sidebar.css';
+import './Sidebar.css';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
