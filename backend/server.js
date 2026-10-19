@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const organizationScopePlugin = require('./src/utils/organizationScopePlugin');
+mongoose.plugin(organizationScopePlugin);
 const http = require('http');
 const { Server } = require('socket.io');
 const hpp = require('hpp');
@@ -10,6 +13,18 @@ const helmet = require('helmet');
 const connectDB = require('./src/config/db');
 const { sanitizeInput } = require('./src/middleware/security');
 const { apiLimiter } = require('./src/middleware/rateLimiter');
+// ===== REGISTER ALL MODELS =====
+require('./src/models/Organization');
+require('./src/models/User');
+require('./src/models/Client');
+require('./src/models/Invoice');
+require('./src/models/Payment');
+require('./src/models/Receipt');
+require('./src/models/CreditNote');
+require('./src/models/Counter');
+require('./src/models/Notification');
+require('./src/models/PushSubscription');
+require('./src/models/SecurityLog');
 
 // Routes
 const authRoutes = require('./src/routes/authRoutes');
@@ -21,6 +36,7 @@ const communicationRoutes = require('./src/routes/communicationRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const pushRoutes = require('./src/routes/pushRoutes');
 const creditNoteRoutes = require('./src/routes/creditNoteRoutes');
+const exportRoutes = require('./src/routes/exportRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -71,8 +87,12 @@ io.use((socket, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded.organization) {
+            return next(new Error('Organization required'));
+        }
         socket.userId = decoded.id;
         socket.userRole = decoded.role;
+        socket.organizationId = String(decoded.organization);
         next();
     } catch (err) {
         next(new Error('Invalid token'));
@@ -84,21 +104,23 @@ io.on('connection', (socket) => {
 
     // Auto-register from authenticated socket
     if (socket.userId) {
+        socket.join(`organization:${socket.organizationId}`);
         connectedUsers.set(String(socket.userId), socket.id);
         console.log(`👤 User ${socket.userId} auto-registered with socket ${socket.id}`);
     }
 
     // Legacy register event (kept for compatibility)
     socket.on('register', (userId) => {
-        connectedUsers.set(String(userId), socket.id);
-        console.log(`👤 User ${userId} registered with socket ${socket.id}`);
+        if (String(userId) === String(socket.userId)) {
+            connectedUsers.set(String(userId), socket.id);
+        }
     });
 
     socket.on('disconnect', () => {
         for (const [userId, socketId] of connectedUsers.entries()) {
             if (socketId === socket.id) {
                 connectedUsers.delete(userId);
-                console.log(`👋 User ${userId} disconnected`);
+                console.log(` User ${userId} disconnected`);
                 break;
             }
         }
@@ -114,8 +136,10 @@ global.sendNotificationToUser = (userId, notification) => {
     return false;
 };
 
-global.broadcastNotification = (notification) => {
-    io.emit('notification', notification);
+global.broadcastNotification = (notification, organizationId) => {
+    if (!organizationId) return false;
+    io.to(`organization:${String(organizationId)}`).emit('notification', notification);
+    return true;
 };
 
 // ===== DATABASE =====
@@ -221,6 +245,7 @@ app.use('/api/communications', communicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/credit-notes', creditNoteRoutes);
+app.use('/api/exports', exportRoutes);
 
 // ===== HEALTH CHECK =====
 app.get('/', (req, res) => {
@@ -234,7 +259,7 @@ app.use((req, res) => {
 
 // ===== ERROR HANDLER =====
 app.use((err, req, res, next) => {
-    console.error('💥 Error:', err.message);
+    console.error(' Error:', err.message);
 
     if (err.name === 'ValidationError') {
         return res.status(400).json({ message: 'Validation error', errors: err.message });
@@ -259,7 +284,7 @@ app.use((err, req, res, next) => {
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🔒 Security: Headers ✅ | Rate limiting ✅ | CSP ✅ | Cookie auth ✅`);
-    console.log(`🌐 Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
+    console.log(` Server running on port ${PORT}`);
+    console.log(`Security: Headers | Rate limiting  | CSP  | Cookie auth `);
+    console.log(` Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
 });

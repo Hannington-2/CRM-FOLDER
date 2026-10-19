@@ -6,6 +6,7 @@
     font-family: 'Montserrat', sans-serif;
     background: #f9fafb;
     min-height: calc(100vh - 70px);
+    min-width: 0;
 }
 
 /* ===== WELCOME BANNER ===== */
@@ -156,7 +157,7 @@
 /* ===== KPI CARDS ===== */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     gap: 18px;
     margin-bottom: 22px;
 }

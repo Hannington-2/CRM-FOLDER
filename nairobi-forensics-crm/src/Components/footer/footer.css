@@ -45,6 +45,7 @@
     align-items: center;
     gap: 6px;
     color: rgba(255, 255, 255, 0.8);
+    flex-wrap: wrap;
 }
 
 .developed-by .icon {
@@ -104,5 +105,30 @@
         flex-direction: column;
         gap: 8px;
         margin-top: 5px;
+    }
+}
+
+@media (max-width: 400px) {
+    .hero-footer {
+        padding-inline: 12px;
+    }
+
+    .footer-content,
+    .footer-right,
+    .contact-links {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .footer-left p,
+    .developed-by,
+    .contact-links a {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .developed-by,
+    .contact-links a {
+        justify-content: center;
     }
 }

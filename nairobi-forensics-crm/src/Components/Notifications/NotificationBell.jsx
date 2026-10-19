@@ -76,7 +76,7 @@ const NotificationBell = () => {
 
     return (
         <div className="notification-bell" ref={dropdownRef}>
-            <button className="bell-btn" onClick={() => setOpen(!open)} title="Notifications">
+            <button className="bell-btn" onClick={() => setOpen(!open)} aria-label="Notifications">
                 <FaBell />
                 {unreadCount > 0 && (
                     <span className="bell-badge">
@@ -96,12 +96,12 @@ const NotificationBell = () => {
                         </div>
                         <div className="header-actions">
                             {unreadCount > 0 && (
-                                <button className="header-btn" onClick={markAllAsRead} title="Mark all as read">
+                                <button className="header-btn" onClick={markAllAsRead} aria-label="Mark all as read" data-tooltip="Mark all as read">
                                     <FaCheck />
                                 </button>
                             )}
                             {notifications.length > 0 && (
-                                <button className="header-btn danger" onClick={clearAll} title="Clear all">
+                                <button className="header-btn danger" onClick={clearAll} aria-label="Clear all notifications" data-tooltip="Clear all notifications">
                                     <FaTrash />
                                 </button>
                             )}
@@ -137,7 +137,8 @@ const NotificationBell = () => {
                                             e.stopPropagation();
                                             deleteNotification(n._id);
                                         }}
-                                        title="Delete"
+                                        aria-label="Delete notification"
+                                        data-tooltip="Delete notification"
                                     >
                                         <FaTrash />
                                     </button>

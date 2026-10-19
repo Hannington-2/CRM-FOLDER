@@ -1,6 +1,7 @@
 // backend/src/services/webPushService.js
 const webpush = require('web-push');
 const PushSubscription = require('../models/PushSubscription');
+const User = require('../models/User');
 
 // Configure VAPID
 webpush.setVapidDetails(
@@ -51,17 +52,23 @@ const sendPushToUser = async (userId, payload) => {
 };
 
 /**
- * Send a push notification to ALL staff (all users).
+/**
+ * Send push notifications to every user in an organization.
  */
-const sendPushToAllStaff = async (payload) => {
-    const subscriptions = await PushSubscription.find({ isActive: true });
-    console.log(`📢 Broadcasting push to ${subscriptions.length} device(s)`);
+const sendPushToOrganization = async (organizationId, payload) => {
+    const users = await User.find({ organization: organizationId })
+        .setOptions({ organizationScopeBypass: true })
+        .select('_id');
+    const subscriptions = await PushSubscription.find({
+        user: { $in: users.map(user => user._id) },
+        isActive: true
+    });
 
     const results = await Promise.allSettled(
         subscriptions.map(sub => sendPushToSubscription(sub, payload))
     );
 
-    const sent = results.filter(r => r.value === true).length;
+    const sent = results.filter(result => result.value === true).length;
     return { sent, total: subscriptions.length };
 };
 
@@ -69,5 +76,5 @@ module.exports = {
     webpush,
     sendPushToSubscription,
     sendPushToUser,
-    sendPushToAllStaff
+    sendPushToOrganization
 };

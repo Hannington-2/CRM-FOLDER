@@ -20,6 +20,9 @@ const iconForType = (type) => {
 
 const colorForType = (type) => {
     switch (type) {
+        case 'ui_success': return 'green';
+        case 'ui_error': return 'red';
+        case 'ui_info': return 'blue';
         case 'invoice_created': return 'purple';
         case 'payment_received': return 'green';
         case 'receipt_generated': return 'blue';
@@ -41,12 +44,13 @@ const ToastContainer = () => {
     };
 
     return (
-        <div className="toast-container">
+        <div className="toast-container" aria-live="polite" aria-atomic="false">
             {toasts.map(toast => (
                 <div
                     key={toast.toastId}
                     className="toast-item"
                     onClick={() => handleClick(toast)}
+                    role="status"
                 >
                     <div className={`toast-icon ${colorForType(toast.type)}`}>
                         {iconForType(toast.type)}

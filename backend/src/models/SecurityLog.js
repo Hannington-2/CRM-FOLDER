@@ -1,4 +1,4 @@
-// backend/src/models/SecurityLog.js
+// SecurityLog.js
 const mongoose = require('mongoose');
 
 const securityLogSchema = new mongoose.Schema({
@@ -20,7 +20,7 @@ const securityLogSchema = new mongoose.Schema({
         required: true
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    email: String,           // Capture even failed attempts
+    email: String,           
     ip: String,
     userAgent: String,
     details: mongoose.Schema.Types.Mixed,
@@ -31,7 +31,7 @@ const securityLogSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Auto-delete logs older than 90 days (keep DB lean)
+// Auto-delete logs older than 90 days 
 securityLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 module.exports = mongoose.model('SecurityLog', securityLogSchema);

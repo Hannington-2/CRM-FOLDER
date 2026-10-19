@@ -38,11 +38,11 @@ export const connectSocket = (userId) => {
     });
 
     socket.on('disconnect', (reason) => {
-        console.log('❌ Socket disconnected:', reason);
+        console.log(' Socket disconnected:', reason);
     });
 
     socket.on('connect_error', (err) => {
-        console.warn('⚠️ Socket connection error:', err.message);
+        console.warn('Socket connection error:', err.message);
     });
 
     return socket;

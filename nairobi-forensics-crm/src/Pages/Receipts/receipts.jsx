@@ -109,7 +109,7 @@ const Receipts = () => {
                                             <button
                                                 className="icon-btn view"
                                                 onClick={() => setViewingId(r._id)}
-                                                title="View Receipt"
+                                                aria-label="View receipt"
                                             >
                                                 <FaEye />
                                             </button>

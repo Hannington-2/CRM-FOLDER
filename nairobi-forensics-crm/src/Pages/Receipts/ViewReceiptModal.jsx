@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPrint, FaDownload } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { useNotifications } from '../../context/NotificationContext';
 import { downloadPDF } from '../../utils/pdfDownload';
 import './ViewReceiptModal.css';
 
@@ -9,6 +10,7 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
     const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
+    const { showToast } = useNotifications();
 
     useEffect(() => {
         const load = async () => {
@@ -58,6 +60,9 @@ const ViewReceiptModal = ({ receiptId, onClose }) => {
                 `/receipts/${receiptId}/pdf`,
                 `${receipt.receiptNumber || 'receipt'}.pdf`
             );
+            showToast({ type: 'ui_success', title: 'Download ready', message: 'Your receipt PDF has been downloaded.' });
+        } catch (err) {
+            showToast({ type: 'ui_error', title: 'Download failed', message: err.message });
         } finally {
             setDownloading(false);
         }

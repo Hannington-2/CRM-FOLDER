@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { FaPlus, FaSearch, FaEye, FaTrash, FaFileInvoiceDollar } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { useNotifications } from '../../context/NotificationContext';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import InvoiceModal from './InvoiceModal';
 import ViewInvoiceModal from './ViewInvoiceModal';
 import './invoices.css';
@@ -15,6 +17,8 @@ const Invoices = () => {
     const [error, setError] = useState('');
     const [createOpen, setCreateOpen] = useState(false);
     const [viewingInvoice, setViewingInvoice] = useState(null);
+    const [pendingCancel, setPendingCancel] = useState(null);
+    const { showToast } = useNotifications();
 
     const loadInvoices = async () => {
         try {
@@ -59,13 +63,16 @@ const Invoices = () => {
             day: '2-digit', month: 'short', year: 'numeric'
         });
 
-    const handleCancel = async (invoice) => {
-        if (!window.confirm(`Cancel invoice ${invoice.invoiceNumber}? This cannot be undone.`)) return;
+    const handleCancel = async () => {
+        if (!pendingCancel) return;
+        const invoice = pendingCancel;
+        setPendingCancel(null);
         try {
             await apiFetch(`/invoices/${invoice._id}`, { method: 'DELETE' });
             loadInvoices();
+            showToast({ type: 'ui_success', title: 'Invoice cancelled', message: `${invoice.invoiceNumber} was cancelled.` });
         } catch (err) {
-            alert('Cancel failed: ' + err.message);
+            showToast({ type: 'ui_error', title: 'Cancellation failed', message: err.message });
         }
     };
 
@@ -185,14 +192,14 @@ const Invoices = () => {
                                             <button
                                                 className="icon-btn view"
                                                 onClick={() => setViewingInvoice(inv._id)}
-                                                title="View"
+                                                aria-label="View invoice"
                                             >
                                                 <FaEye />
                                             </button>
                                             <button
                                                 className="icon-btn delete"
-                                                onClick={() => handleCancel(inv)}
-                                                title="Cancel"
+                                                onClick={() => setPendingCancel(inv)}
+                                                aria-label="Cancel invoice"
                                                 disabled={inv.status === 'paid' || inv.status === 'cancelled' || inv.totalPaid > 0}
                                             >
                                                 <FaTrash />
@@ -218,6 +225,15 @@ const Invoices = () => {
                     invoiceId={viewingInvoice}
                     onClose={() => setViewingInvoice(null)}
                     onRefresh={loadInvoices}
+                />
+            )}
+            {pendingCancel && (
+                <ConfirmDialog
+                    title="Cancel this invoice?"
+                    message={`Cancel invoice ${pendingCancel.invoiceNumber}? This action cannot be undone.`}
+                    confirmLabel="Cancel invoice"
+                    onCancel={() => setPendingCancel(null)}
+                    onConfirm={handleCancel}
                 />
             )}
         </div>

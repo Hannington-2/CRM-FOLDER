@@ -161,6 +161,7 @@ export const NotificationProvider = ({ children }) => {
             deleteNotification,
             clearAll,
             dismissToast,
+            showToast,
             refresh: load
         }}>
             {children}

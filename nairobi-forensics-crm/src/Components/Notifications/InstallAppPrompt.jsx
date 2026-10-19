@@ -1,6 +1,7 @@
 // src/Components/Notifications/InstallAppPrompt.jsx
 import { useState, useEffect } from 'react';
 import { FaDownload, FaTimes, FaMobileAlt, FaSpinner } from 'react-icons/fa';
+import { useNotifications } from '../../context/NotificationContext';
 import './InstallAppPrompt.css';
 
 const InstallAppPrompt = () => {
@@ -9,6 +10,7 @@ const InstallAppPrompt = () => {
     const [isIOS, setIsIOS] = useState(false);
     const [isInstalled, setIsInstalled] = useState(false);
     const [installing, setInstalling] = useState(false);
+    const { showToast } = useNotifications();
 
     useEffect(() => {
         let promptTimer = null;
@@ -32,7 +34,7 @@ const InstallAppPrompt = () => {
 
         // Listen for the native install prompt event
         const beforeInstallHandler = (e) => {
-            console.log('🎯 beforeinstallprompt fired! App is installable.');
+            console.log(' beforeinstallprompt fired! App is installable.');
             e.preventDefault(); // Prevent Chrome's mini-infobar
             setDeferredPrompt(e);
             // Show our custom prompt in sync with the notification prompt
@@ -44,7 +46,7 @@ const InstallAppPrompt = () => {
 
         // Detect successful install
         const installedHandler = () => {
-            console.log('✅ App installed successfully');
+            console.log('App installed successfully');
             setIsInstalled(true);
             setShow(false);
             setDeferredPrompt(null);
@@ -64,12 +66,11 @@ const InstallAppPrompt = () => {
         // iOS: no native prompt — show native OS instructions
         if (isIOS) {
             setShow(false);
-            alert(
-                '📱 To install on iPhone/iPad:\n\n' +
-                '1. Tap the Share button (square with arrow at the bottom)\n' +
-                '2. Scroll down and tap "Add to Home Screen"\n' +
-                '3. Tap "Add" in the top-right corner'
-            );
+            showToast({
+                type: 'ui_info',
+                title: 'Install on iPhone or iPad',
+                message: 'Tap Share, choose “Add to Home Screen”, then tap Add.'
+            });
             return;
         }
 
@@ -99,13 +100,11 @@ const InstallAppPrompt = () => {
 
         // No native prompt available yet (Chrome hasn't fired the event)
         // Tell the user to look in the browser — without a wall of text
-        alert(
-            'The install prompt isn\'t available yet.\n\n' +
-            'Try one of these:\n' +
-            '• Chrome/Edge Desktop: Look for the install icon (⊕) in the address bar\n' +
-            '• Android Chrome: Menu (⋮) → "Install app"\n\n' +
-            'If you don\'t see it, refresh the page and wait a few seconds.'
-        );
+        showToast({
+            type: 'ui_info',
+            title: 'Install prompt unavailable',
+            message: 'Use the browser menu to install the app, or refresh and try again shortly.'
+        });
     };
 
     const handleDismiss = () => {

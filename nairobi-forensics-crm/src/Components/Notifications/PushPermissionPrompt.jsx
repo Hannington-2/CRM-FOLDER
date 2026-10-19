@@ -20,7 +20,7 @@ const PushPermissionPrompt = () => {
         const permission = getPermissionState();
         const dismissed = localStorage.getItem('push_prompt_dismissed_v7');
 
-        console.log('🔔 Initial permission:', permission);
+        console.log(' Initial permission:', permission);
 
         // Already granted → nothing to do
         if (permission === 'granted') return;
@@ -47,9 +47,9 @@ const PushPermissionPrompt = () => {
 
         try {
             // 1. Ask the browser — this shows the native Allow/Block dialog
-            console.log('🔔 Requesting permission — browser dialog should appear...');
+            console.log(' Requesting permission — browser dialog should appear...');
             const permission = await requestNotificationPermission();
-            console.log('🔔 Result:', permission);
+            console.log(' Result:', permission);
 
             if (permission === 'granted') {
                 // 2. Browser said yes — subscribe + save to backend
@@ -62,7 +62,7 @@ const PushPermissionPrompt = () => {
                 localStorage.setItem('push_prompt_dismissed_v7', Date.now());
             }
         } catch (err) {
-            console.error('❌ Enable failed:', err);
+            console.error(' Enable failed:', err);
             setError(err.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
@@ -87,7 +87,7 @@ const PushPermissionPrompt = () => {
                             <FaCheck />
                         </div>
                         <div className="nf-push-body">
-                            <h4>Notifications enabled 🎉</h4>
+                            <h4>Notifications enabled </h4>
                             <p>You'll get alerts on this device.</p>
                         </div>
                     </div>

@@ -1,0 +1,139 @@
+/* tourStyles.css */
+/* Override driver.js default theme to match Nairobi Forensics branding */
+
+.driver-popover {
+    font-family: 'Montserrat', sans-serif !important;
+    background: #ffffff !important;
+    border-radius: 14px !important;
+    padding: 24px !important;
+    box-shadow: 0 25px 70px rgba(5, 10, 48, 0.35) !important;
+    max-width: 400px !important;
+}
+
+.driver-popover-title {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    color: #050A30 !important;
+    margin-bottom: 10px !important;
+    line-height: 1.3 !important;
+}
+
+.driver-popover-description {
+    font-size: 0.92rem !important;
+    color: #4b5563 !important;
+    line-height: 1.65 !important;
+    font-weight: 500 !important;
+}
+
+.driver-popover-footer {
+    margin-top: 18px !important;
+    padding-top: 14px !important;
+    border-top: 1px solid #f3f4f6 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+.driver-popover-progress-text {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: #9ca3af !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.driver-popover-navigation-btns {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+.driver-popover-prev-btn,
+.driver-popover-next-btn {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    padding: 9px 16px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+.driver-popover-prev-btn {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.driver-popover-prev-btn:hover {
+    background: #e5e7eb !important;
+}
+
+.driver-popover-next-btn {
+    background: #D32F2F !important;
+    color: #ffffff !important;
+}
+
+.driver-popover-next-btn:hover {
+    background: #b02525 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35) !important;
+}
+
+/* Close (X) button */
+.driver-popover-close-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    color: #9ca3af !important;
+    font-size: 0.9rem !important;
+    transition: color 0.2s ease !important;
+}
+
+.driver-popover-close-btn:hover {
+    color: #374151 !important;
+}
+
+/* Arrow */
+.driver-popover-arrow-side-left.driver-popover-arrow {
+    border-right-color: #ffffff !important;
+}
+.driver-popover-arrow-side-right.driver-popover-arrow {
+    border-left-color: #ffffff !important;
+}
+.driver-popover-arrow-side-top.driver-popover-arrow {
+    border-bottom-color: #ffffff !important;
+}
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+    border-top-color: #ffffff !important;
+}
+
+/* Highlight ring around target */
+.driver-active-element {
+    outline: 3px solid #D32F2F !important;
+    outline-offset: 4px !important;
+    border-radius: 6px !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+    .driver-popover {
+        padding: 18px !important;
+        max-width: calc(100vw - 32px) !important;
+    }
+    .driver-popover-title {
+        font-size: 1rem !important;
+    }
+    .driver-popover-description {
+        font-size: 0.85rem !important;
+    }
+    .driver-popover-prev-btn,
+    .driver-popover-next-btn {
+        padding: 8px 12px !important;
+        font-size: 0.75rem !important;
+    }
+}

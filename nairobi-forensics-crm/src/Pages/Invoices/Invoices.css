@@ -34,7 +34,7 @@
 /* Summary stats */
 .invoice-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -284,5 +284,16 @@
     .data-table th:last-child {
         background: #f9fafb;
         z-index: 2;
+    }
+}
+
+@media (max-width: 320px) {
+    .invoice-stats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mini-stat {
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
 }

@@ -27,21 +27,22 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Uppercase the code field automatically
-        const cleanValue = name === 'code' 
-            ? value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)
+        const cleanValue = name === 'code'
+            ? value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 10)
             : value;
         setForm({ ...form, [name]: cleanValue });
+        if (error) setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) return;   // Guard: prevent double-click
         setError('');
         setLoading(true);
 
         const payload = {
             name: form.name,
-            code: form.code || undefined, // Let backend auto-generate if empty
+            code: form.code || undefined,
             email: form.email,
             phone: form.phone,
             kraPin: form.kraPin,
@@ -74,7 +75,11 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
             }
             onSuccess();
         } catch (err) {
-            setError(err.message);
+            if (err.message?.toLowerCase().includes('already exists')) {
+                setError(err.message);
+            } else {
+                setError(err.message || 'Failed to save client');
+            }
         } finally {
             setLoading(false);
         }
@@ -85,7 +90,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{isEditing ? 'Edit Client' : 'New Client'}</h2>
-                    <button className="close-btn" onClick={onClose}>
+                    <button className="close-btn" onClick={onClose} aria-label="Close client form">
                         <FaTimes />
                     </button>
                 </div>
@@ -116,11 +121,11 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                                     value={form.code}
                                     onChange={handleChange}
                                     placeholder="KRACU"
-                                    maxLength={6}
+                                    maxLength={10}
                                     style={{ textTransform: 'uppercase', fontFamily: 'monospace' }}
                                 />
                                 <small style={{ color: '#6b7280', fontSize: '0.7rem' }}>
-                                    3-6 letters/digits. Used to prefix invoices & receipts.
+                                    3–10 letters/digits. Used to prefix invoices & receipts.
                                 </small>
                             </div>
                             <div className="form-group">
@@ -142,7 +147,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                                     type="email"
                                     value={form.email}
                                     onChange={handleChange}
-                                    placeholder="info@abc.co.ke"
+                                    placeholder="info@forensicsnbi.com"
                                 />
                             </div>
                             <div className="form-group">
@@ -151,7 +156,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                                     name="phone"
                                     value={form.phone}
                                     onChange={handleChange}
-                                    placeholder="0722111222"
+                                    placeholder="0713 416 426"
                                 />
                             </div>
                         </div>
@@ -162,30 +167,15 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                         <div className="form-row">
                             <div className="form-group">
                                 <label>Street</label>
-                                <input
-                                    name="street"
-                                    value={form.street}
-                                    onChange={handleChange}
-                                    placeholder="Kenyatta Avenue"
-                                />
+                                <input name="street" value={form.street} onChange={handleChange} placeholder="Kenyatta Avenue" />
                             </div>
                             <div className="form-group">
                                 <label>City</label>
-                                <input
-                                    name="city"
-                                    value={form.city}
-                                    onChange={handleChange}
-                                    placeholder="Nairobi"
-                                />
+                                <input name="city" value={form.city} onChange={handleChange} placeholder="Nairobi" />
                             </div>
                             <div className="form-group small">
                                 <label>Postal Code</label>
-                                <input
-                                    name="postalCode"
-                                    value={form.postalCode}
-                                    onChange={handleChange}
-                                    placeholder="00100"
-                                />
+                                <input name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00100" />
                             </div>
                         </div>
                     </div>
@@ -195,31 +185,15 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                         <div className="form-row">
                             <div className="form-group">
                                 <label>Name</label>
-                                <input
-                                    name="contactName"
-                                    value={form.contactName}
-                                    onChange={handleChange}
-                                    placeholder="Jane Mwangi"
-                                />
+                                <input name="contactName" value={form.contactName} onChange={handleChange} placeholder="Jane Mwangi" />
                             </div>
                             <div className="form-group">
                                 <label>Email</label>
-                                <input
-                                    name="contactEmail"
-                                    type="email"
-                                    value={form.contactEmail}
-                                    onChange={handleChange}
-                                    placeholder="jane@abc.co.ke"
-                                />
+                                <input name="contactEmail" type="email" value={form.contactEmail} onChange={handleChange} placeholder="jane@abc.co.ke" />
                             </div>
                             <div className="form-group">
                                 <label>Phone</label>
-                                <input
-                                    name="contactPhone"
-                                    value={form.contactPhone}
-                                    onChange={handleChange}
-                                    placeholder="0733444555"
-                                />
+                                <input name="contactPhone" value={form.contactPhone} onChange={handleChange} placeholder="0713 416 426" />
                             </div>
                         </div>
                     </div>
@@ -229,13 +203,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
                         <div className="form-row">
                             <div className="form-group full">
                                 <label>Notes</label>
-                                <textarea
-                                    name="notes"
-                                    value={form.notes}
-                                    onChange={handleChange}
-                                    placeholder="Any additional notes..."
-                                    rows="3"
-                                />
+                                <textarea name="notes" value={form.notes} onChange={handleChange} placeholder="Any additional notes..." rows="3" />
                             </div>
                             <div className="form-group">
                                 <label>Status</label>

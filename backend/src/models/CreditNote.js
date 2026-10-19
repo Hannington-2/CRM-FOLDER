@@ -2,7 +2,13 @@
 const mongoose = require('mongoose');
 
 const creditNoteSchema = new mongoose.Schema({
-    creditNoteNumber: { type: String, required: true, unique: true },
+    organization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
+        required: true,
+        index: true
+    },
+    creditNoteNumber: { type: String, required: true },
     client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
     invoice: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', required: true },
     amount: { type: Number, required: true, min: 0.01 },
@@ -30,7 +36,8 @@ const creditNoteSchema = new mongoose.Schema({
     cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-creditNoteSchema.index({ client: 1, createdAt: -1 });
-creditNoteSchema.index({ invoice: 1 });
+creditNoteSchema.index({ organization: 1, creditNoteNumber: 1 }, { unique: true });
+creditNoteSchema.index({ organization: 1, client: 1, createdAt: -1 });
+creditNoteSchema.index({ organization: 1, invoice: 1 });
 
 module.exports = mongoose.model('CreditNote', creditNoteSchema);

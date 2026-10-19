@@ -1,6 +1,5 @@
 // backend/src/controllers/pushController.js
 const PushSubscription = require('../models/PushSubscription');
-const { sendPushToUser, sendPushToAllStaff } = require('../services/webPushService');
 
 // @desc    Get VAPID public key for frontend
 // @route   GET /api/push/vapid-key

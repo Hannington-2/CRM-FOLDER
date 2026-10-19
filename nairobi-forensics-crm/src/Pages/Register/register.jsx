@@ -6,10 +6,12 @@ import { CiLinkedin } from "react-icons/ci";
 import { VscTwitter } from "react-icons/vsc";
 import { useNavigate, Link } from 'react-router-dom';
 import { publicFetch } from '../../utils/api';
+import { useNotifications } from '../../context/NotificationContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
+    organizationName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -21,6 +23,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { showToast } = useNotifications();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,12 +71,13 @@ const Register = () => {
         method: 'POST',
         body: {
           name: formData.name,
+          organizationName: formData.organizationName,
           email: formData.email,
           password: formData.password
         }
       });
 
-      alert('Account created successfully! Please login.');
+      showToast({ type: 'ui_success', title: 'Account created', message: 'Your private workspace is ready. Please sign in.' });
       navigate('/login');
     } catch (err) {
       if (err.errors && Array.isArray(err.errors)) {
@@ -134,6 +138,21 @@ const Register = () => {
                 placeholder="info@forensicsnbi.com"
                 required
                 autoComplete="email"
+              />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="organizationName">Organization Name</label>
+              <input
+                id="organizationName"
+                name="organizationName"
+                type="text"
+                value={formData.organizationName}
+                onChange={handleChange}
+                placeholder="Your company or workspace"
+                maxLength={100}
+                required
+                autoComplete="organization"
               />
             </div>
 

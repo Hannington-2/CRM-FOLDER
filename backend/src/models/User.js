@@ -1,3 +1,4 @@
+// backend/src/models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -24,34 +25,28 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ['admin', 'staff', 'client'],
-        default: 'staff'
+        default: 'admin'
     },
 
-    // ===== SECURITY FIELDS =====
-    failedLoginAttempts: {
-        type: Number,
-        default: 0,
-        select: false
+    // ===== ORGANIZATION (multi-tenant) =====
+    organization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
+        required: true,
+        index: true
     },
-    lockoutUntil: {
-        type: Date,
-        select: false
-    },
+
+    failedLoginAttempts: { type: Number, default: 0, select: false },
+    lockoutUntil: { type: Date, select: false },
     lastLogin: Date,
     lastLoginIP: String,
     passwordChangedAt: Date,
-    isActive: {
-        type: Boolean,
-        default: true
-    },
+    isActive: { type: Boolean, default: true },
 
-    // Track password reset flow
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false }
-
 }, { timestamps: true });
 
-// Method to check if account is locked
 userSchema.methods.isLocked = function () {
     return !!(this.lockoutUntil && this.lockoutUntil > Date.now());
 };

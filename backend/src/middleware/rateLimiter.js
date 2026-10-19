@@ -14,7 +14,7 @@ exports.loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
-        console.warn(`🚨 Login rate limit hit: ${req.ip}`);
+        console.warn(`Login rate limit hit: ${req.ip}`);
         res.status(429).json({
             message: 'Too many login attempts. Please try again after 15 minutes.'
         });
@@ -47,7 +47,7 @@ exports.apiLimiter = rateLimit({
 exports.readLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
-    message: { message: 'Too many requests. Please slow down.' },
+    message: { message: 'Too many requests. Please wait.' },
     standardHeaders: true,
     legacyHeaders: false
 });

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 
 router.use(authMiddleware);
 
@@ -68,8 +69,21 @@ router.delete('/clear-all', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { userId, type, title, message, link, data } = req.body;
+        let recipientId = null;
+        if (userId) {
+            const recipient = await User.findOne({
+                _id: userId,
+                organization: req.organization._id
+            }).select('_id');
+            if (!recipient) {
+                return res.status(404).json({ message: 'Notification recipient not found' });
+            }
+            recipientId = recipient._id;
+        }
+
         const notification = await Notification.create({
-            user: userId || null,
+            organization: req.organization._id,
+            user: recipientId,
             type,
             title,
             message,
@@ -77,10 +91,10 @@ router.post('/', async (req, res) => {
             data
         });
 
-        if (userId && global.sendNotificationToUser) {
-            global.sendNotificationToUser(userId, notification);
+        if (recipientId && global.sendNotificationToUser) {
+            global.sendNotificationToUser(recipientId, notification);
         } else if (global.broadcastNotification) {
-            global.broadcastNotification(notification);
+            global.broadcastNotification(notification, req.organization._id);
         }
 
         res.status(201).json(notification);

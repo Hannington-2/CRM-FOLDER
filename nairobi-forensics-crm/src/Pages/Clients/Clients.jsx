@@ -1,7 +1,13 @@
 // src/Pages/Clients/clients.jsx
 import { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
+import {
+    FaPlus, FaSearch, FaEdit, FaTrash, FaUser,
+    FaEnvelope, FaPhone, FaFileExcel, FaEye
+} from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { downloadExcel } from '../../utils/excelDownload';
+import { useNotifications } from '../../context/NotificationContext';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import ClientModal from './ClientModal';
 import './clients.css';
 
@@ -13,6 +19,9 @@ const Clients = () => {
     const [error, setError] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
+    const [pendingDelete, setPendingDelete] = useState(null);
+    const [exportingId, setExportingId] = useState(null);
+    const { showToast } = useNotifications();
 
     // Load clients
     const loadClients = async () => {
@@ -60,14 +69,59 @@ const Clients = () => {
         setModalOpen(true);
     };
 
+    // Export client payment ledger to Excel
+    const handleExportClient = async (client) => {
+        if (!client?._id) return;
+        setExportingId(client._id);
+        const safeName = (client.name || 'Client').replace(/[^a-zA-Z0-9]/g, '_');
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        try {
+            await downloadExcel(
+                `/exports/client/${client._id}`,
+                `${safeName}-Payments-${dateStr}.xlsx`
+            );
+            showToast({
+                type: 'ui_success',
+                title: 'Excel exported',
+                message: `${client.name}'s payment ledger downloaded.`
+            });
+        } catch (err) {
+            showToast({
+                type: 'ui_error',
+                title: 'Export failed',
+                message: err.message || 'Could not export to Excel'
+            });
+        } finally {
+            setExportingId(null);
+        }
+    };
+
+    // View statement (opens a new page)
+    const handleViewStatement = (client) => {
+        if (!client?._id) return;
+        window.location.href = `/dashboard/clients/${client._id}/statement`;
+    };
+
     // Delete client
-    const handleDelete = async (client) => {
-        if (!window.confirm(`Delete ${client.name}? This cannot be undone.`)) return;
+    const handleDelete = async () => {
+        if (!pendingDelete) return;
+        const client = pendingDelete;
+        setPendingDelete(null);
         try {
             await apiFetch(`/clients/${client._id}`, { method: 'DELETE' });
             loadClients();
+            showToast({
+                type: 'ui_success',
+                title: 'Client deleted',
+                message: `${client.name} was removed.`
+            });
         } catch (err) {
-            alert('Delete failed: ' + err.message);
+            showToast({
+                type: 'ui_error',
+                title: 'Delete failed',
+                message: err.message
+            });
         }
     };
 
@@ -154,7 +208,7 @@ const Clients = () => {
                                                 {client.code}
                                             </span>
                                         ) : (
-                                            <span style={{ color: '#c62828', fontSize: '0.75rem', fontWeight: 600 }}>
+                                            <span className="no-code-warning">
                                                 No code
                                             </span>
                                         )}
@@ -178,17 +232,39 @@ const Clients = () => {
                                     </td>
                                     <td>
                                         <div className="actions-cell">
+                                            {/* View Statement */}
+                                            <button
+                                                className="icon-btn view"
+                                                onClick={() => handleViewStatement(client)}
+                                                aria-label="View statement"
+                                            >
+                                                <FaEye />
+                                            </button>
+
+                                            {/* Export to Excel */}
+                                            <button
+                                                className="icon-btn excel"
+                                                onClick={() => handleExportClient(client)}
+                                                disabled={exportingId === client._id}
+                                                aria-label="Export payments to Excel"
+                                            >
+                                                <FaFileExcel />
+                                            </button>
+
+                                            {/* Edit */}
                                             <button
                                                 className="icon-btn edit"
                                                 onClick={() => handleEditClick(client)}
-                                                title="Edit"
+                                                aria-label="Edit client"
                                             >
                                                 <FaEdit />
                                             </button>
+
+                                            {/* Delete */}
                                             <button
                                                 className="icon-btn delete"
-                                                onClick={() => handleDelete(client)}
-                                                title="Delete"
+                                                onClick={() => setPendingDelete(client)}
+                                                aria-label="Delete client"
                                             >
                                                 <FaTrash />
                                             </button>
@@ -207,6 +283,17 @@ const Clients = () => {
                     client={editingClient}
                     onClose={() => { setModalOpen(false); setEditingClient(null); }}
                     onSuccess={handleModalSuccess}
+                />
+            )}
+
+            {/* Delete Confirmation */}
+            {pendingDelete && (
+                <ConfirmDialog
+                    title="Delete this client?"
+                    message={`Delete ${pendingDelete.name}? This action cannot be undone.`}
+                    confirmLabel="Delete client"
+                    onCancel={() => setPendingDelete(null)}
+                    onConfirm={handleDelete}
                 />
             )}
         </div>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { generateIdempotencyKey } from '../../utils/idempotency';
 import './InvoiceModal.css';
 
 const InvoiceModal = ({ onClose, onSuccess }) => {
@@ -19,7 +20,9 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Load clients
+    // Generate idempotency key ONCE when modal mounts
+    const [idempotencyKey] = useState(() => generateIdempotencyKey());
+
     useEffect(() => {
         const load = async () => {
             try {
@@ -32,7 +35,6 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
         load();
     }, []);
 
-    // Set default due date (30 days from today)
     useEffect(() => {
         const due = new Date();
         due.setDate(due.getDate() + 30);
@@ -58,7 +60,6 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
         setItems(items.filter((_, i) => i !== index));
     };
 
-    // Live calculations
     const subtotal = items.reduce((sum, it) =>
         sum + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0
     );
@@ -70,9 +71,9 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) return;   // Guard
         setError('');
 
-        // Validate
         if (!form.client) return setError('Please select a client');
         if (!form.dueDate) return setError('Please set a due date');
         if (items.some(i => !i.description || i.unitPrice <= 0)) {
@@ -94,12 +95,18 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
                         description: i.description,
                         quantity: Number(i.quantity),
                         unitPrice: Number(i.unitPrice)
-                    }))
+                    })),
+                    idempotencyKey
                 }
             });
             onSuccess();
         } catch (err) {
-            setError(err.message);
+            if (err.message?.toLowerCase().includes('duplicate')) {
+                setError('This invoice was already created. Refreshing...');
+                setTimeout(onSuccess, 1500);
+            } else {
+                setError(err.message || 'Failed to create invoice');
+            }
         } finally {
             setLoading(false);
         }
@@ -110,13 +117,12 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
             <div className="modal invoice-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>Create New Invoice</h2>
-                    <button className="close-btn" onClick={onClose}>
+                    <button className="close-btn" onClick={onClose} aria-label="Close invoice form">
                         <FaTimes />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-body">
-                    {/* Client & Dates */}
                     <div className="form-section">
                         <h3>Invoice Details</h3>
                         <div className="form-row">
@@ -135,39 +141,19 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
                         <div className="form-row">
                             <div className="form-group">
                                 <label>Issue Date</label>
-                                <input
-                                    type="date"
-                                    name="issueDate"
-                                    value={form.issueDate}
-                                    onChange={handleChange}
-                                />
+                                <input type="date" name="issueDate" value={form.issueDate} onChange={handleChange} />
                             </div>
                             <div className="form-group">
                                 <label>Due Date *</label>
-                                <input
-                                    type="date"
-                                    name="dueDate"
-                                    value={form.dueDate}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} required />
                             </div>
                             <div className="form-group">
                                 <label>Tax Rate (%)</label>
-                                <input
-                                    type="number"
-                                    name="taxRate"
-                                    value={form.taxRate}
-                                    onChange={handleChange}
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                />
+                                <input type="number" name="taxRate" value={form.taxRate} onChange={handleChange} min="0" max="100" step="0.01" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Line Items */}
                     <div className="form-section">
                         <div className="section-header">
                             <h3>Line Items</h3>
@@ -222,8 +208,6 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
                         </div>
                     </div>
 
-
-                    {/* Totals & Notes */}
                     <div className="form-section">
                         <div className="totals-section">
                             <div className="notes-box">
@@ -235,8 +219,6 @@ const InvoiceModal = ({ onClose, onSuccess }) => {
                                     placeholder="Any additional notes for the client..."
                                     rows="4"
                                 />
-
-
                             </div>
                             <div className="totals-box">
                                 <div className="total-row">

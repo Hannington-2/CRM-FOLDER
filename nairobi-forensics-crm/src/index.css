@@ -1,88 +1,34 @@
-/* index.css */
-
-/* 1. CSS Reset (Removes default browser spacing) */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* 2. Global Root Variables (Optional but good for consistency) */
 :root {
-  /* You can keep global variables here if needed, 
-     but we already defined brand colors in nav.css and hero.css */
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 3. Global Body Styles */
-body {
-  /* Prevents horizontal scrollbar if an element slightly overflows */
-  overflow-x: hidden; 
-  
-  /* Sets the default font globally. We imported this in nav/hero, 
-     but setting it here ensures text everywhere uses it. */
   font-family: 'Montserrat', sans-serif;
-  
-  /* Sets a default dark background just in case content doesn't fill the screen */
-  background-color: #050A30; /* Brand Navy */
-  color: #ffffff;
-}
-
-/* 4. Link Reset */
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* 5. Button Reset */
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-}
-
-/* 6. Base Heading Reset */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-}
-
-/* 7. Image & Video defaults */
-img, video {
-  max-width: 100%;
-  display: block;
-}
-
-/* nav.css - Update this section */
-
-/* index.css */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
+  color: #1f2937;
+  background: #f4f6fa;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100%;
+  min-width: 0;
 }
 
 body {
+  min-width: 0;
   overflow-x: hidden;
   font-family: 'Montserrat', sans-serif;
-  background-color: #050A30;
-  color: #ffffff;
+  background: #f4f6fa;
+  color: #1f2937;
 }
 
 a {
@@ -110,36 +56,89 @@ button, input, select, textarea {
   max-width: 100%;
 }
 
-.nav-link {
-    text-decoration: none;
-    color: var(--text-color);
-    font-size: 1rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    
-    /* New button resets */
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0;
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(211, 47, 47, 0.45);
+  outline-offset: 2px;
 }
 
-.nav-link:hover {
-    color: var(--primary-color);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* Optional: Make sure the logo is clickable */
-.logo {
-    cursor: pointer;
-    transition: opacity 0.3s ease;
+button[data-tooltip],
+button[aria-label]:not([aria-label=""]) {
+  position: relative;
 }
 
-.logo:hover {
-    opacity: 0.8;
+button[data-tooltip]::after,
+button[aria-label]:not([aria-label=""])::after {
+  content: attr(aria-label);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 11000;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  background: #151a2e;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.24);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+}
+
+button[data-tooltip]:hover::after,
+button[data-tooltip]:focus-visible::after,
+button[aria-label]:not([aria-label=""]):hover::after,
+button[aria-label]:not([aria-label=""]):focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button[data-tooltip]::after,
+  button[aria-label]:not([aria-label=""])::after {
+    transition: none;
+  }
+}
+
+@media (max-width: 320px) {
+  .kpi-grid,
+  .stats-grid,
+  .main-grid,
+  .invoice-stats,
+  .payments-page .invoice-stats,
+  .summary-grid,
+  .feature-grid,
+  .templates-grid,
+  .coming-soon ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mini-stat {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }

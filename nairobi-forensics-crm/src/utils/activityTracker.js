@@ -60,12 +60,9 @@ export const isMobileDevice = () => {
 };
 
 /**
- * Get the appropriate session timeout in milliseconds.
- * Desktop: 60 minutes | Mobile: 30 minutes
+ * Get the inactivity timeout in milliseconds.
  */
-export const getSessionTimeoutMs = () => {
-    return isMobileDevice() ? 30 * 60 * 1000 : 60 * 60 * 1000;
-};
+export const getSessionTimeoutMs = () => 5 * 60 * 1000;
 
 /**
  * The warning window before auto-logout fires.

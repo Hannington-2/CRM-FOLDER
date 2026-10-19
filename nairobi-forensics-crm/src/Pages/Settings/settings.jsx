@@ -2,6 +2,9 @@
 import { useAuth } from '../../context/AuthContext';
 import { FaUser, FaEnvelope, FaUserTag } from 'react-icons/fa';
 import './settings.css';
+// Add these imports at the top:
+import { FaGraduationCap } from 'react-icons/fa';
+import { startDashboardTour, resetTour, hasCompletedTour } from '../../tours/dashboardTour';
 
 const Settings = () => {
     const { user } = useAuth();
@@ -48,6 +51,33 @@ const Settings = () => {
                     </div>
                 </div>
             </div>
+            <div className="panel">
+    <div className="panel-header">
+        <h2>Guided Tour</h2>
+    </div>
+    <div className="tour-settings">
+        <div className="tour-settings-icon">
+            <FaGraduationCap />
+        </div>
+        <div className="tour-settings-content">
+            <h3>Dashboard Walkthrough</h3>
+            <p>
+                {hasCompletedTour()
+                    ? "You've completed the tour. You can replay it anytime to refresh your memory."
+                    : "Take the 60-second tour to learn where everything is."}
+            </p>
+        </div>
+        <button
+            className="btn-primary"
+            onClick={() => {
+                resetTour();
+                startDashboardTour();
+            }}
+        >
+            <FaGraduationCap /> {hasCompletedTour() ? 'Replay Tour' : 'Start Tour'}
+        </button>
+    </div>
+</div>
 {/* 
             <div className="panel">
                 <div className="panel-header">

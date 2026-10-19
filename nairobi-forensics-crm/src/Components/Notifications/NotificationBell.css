@@ -253,8 +253,8 @@
 
 @media (max-width: 480px) {
     .notification-dropdown {
-        width: 320px;
-        right: -60px;
+        width: min(380px, calc(100vw - 24px));
+        right: 0;
     }
     .dropdown-list {
         max-height: 340px;

@@ -112,7 +112,7 @@ exports.createCreditNote = async (req, res) => {
         const client = await Client.findById(invoice.client);
         if (!client) return res.status(404).json({ message: 'Client not found' });
 
-        const creditNoteNumber = await generateNumber('CRN', client.code);
+        const creditNoteNumber = await generateNumber('CRN', client.code, req.organization._id);
 
         const creditNote = await CreditNote.create({
             creditNoteNumber,
@@ -127,6 +127,7 @@ exports.createCreditNote = async (req, res) => {
         const updatedInvoice = await recalcInvoiceWithCredits(invoice._id);
 
         notify({
+            organizationId: req.organization._id,
             userId: null,
             type: 'invoice_created',
             title: '📝 Credit Note Issued',

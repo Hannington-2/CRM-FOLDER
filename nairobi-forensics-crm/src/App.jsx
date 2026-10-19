@@ -9,11 +9,12 @@ import Register from './Pages/Register/register';
 import DashboardLayout from './Pages/Dashboard/DashboardLayout';
 import Dashboard from './Pages/Dashboard/dashboard';
 import Clients from './Pages/Clients/clients';
+import ClientStatement from './Pages/Clients/ClientStatement';
 import Invoices from './Pages/Invoices/invoices';
 import Payments from './Pages/Payments/payments';
 import Receipts from './Pages/Receipts/receipts';
 import Reports from './Pages/Reports/reports';
-import Communications from './Pages/Communications/communications';
+// import Communications from './Pages/Communications/communications';
 import Settings from './Pages/Settings/settings';
 import ToastContainer from './Components/Notifications/ToastContainer';
 
@@ -37,11 +38,12 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="clients" element={<Clients />} />
+              <Route path="clients/:id/statement" element={<ClientStatement />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="payments" element={<Payments />} />
               <Route path="receipts" element={<Receipts />} />
               <Route path="reports" element={<Reports />} />
-              <Route path="communications" element={<Communications />} />
+              {/* <Route path="communications" element={<Communications />} /> */}
               <Route path="settings" element={<Settings />} />
             </Route>
 

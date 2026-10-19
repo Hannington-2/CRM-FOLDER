@@ -1,3 +1,4 @@
+// backend/src/routes/invoiceRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -16,7 +17,7 @@ router.route('/')
     .get(getInvoices)
     .post(createInvoice);
 
-// PDF route — MUST be before /:id
+// PDF route — must be before /:id
 router.get('/:id/pdf', downloadInvoicePDF);
 
 router.route('/:id')

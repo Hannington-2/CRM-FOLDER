@@ -144,7 +144,7 @@
 @media (max-width: 480px) {
     .nf-install-card {
         left: 12px !important;
-        right: right 12px !important;
+        right: 12px !important;
         bottom: 180px !important;
         width: auto !important;
     }

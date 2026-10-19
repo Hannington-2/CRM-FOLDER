@@ -2,7 +2,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     FaTachometerAlt, FaUsers, FaFileInvoiceDollar, FaMoneyBillWave,
-    FaReceipt, FaChartBar, FaCog, FaSignOutAlt, FaEnvelope
+    FaReceipt, FaChartBar, FaCog, FaSignOutAlt, 
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import './sidebar.css';
@@ -17,9 +17,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     };
 
     const navItems = [
-        { section: 'MAIN', items: [
-            { to: '/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' }
-        ]},
+        { section: 'MAIN', 
+            items: [
+            {
+                 to: '/dashboard', icon: <FaTachometerAlt />, 
+                 label: 'Dashboard' 
+            }
+                ]},
         { section: 'SALES', items: [
             { to: '/dashboard/clients', icon: <FaUsers />, label: 'Clients' }
         ]},
@@ -31,9 +35,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         { section: 'REPORTING', items: [
             { to: '/dashboard/reports', icon: <FaChartBar />, label: 'Reports' }
         ]},
-        { section: 'COMMUNICATIONS', items: [
-            { to: '/dashboard/communications', icon: <FaEnvelope />, label: 'Communications' }
-        ]},
+        // { section: 'COMMUNICATIONS', items: [
+        //     { to: '/dashboard/communications', icon: <FaEnvelope />, label: 'Communications' }
+        // ]},
         { section: 'SYSTEM', items: [
             { to: '/dashboard/settings', icon: <FaCog />, label: 'Settings' }
         ]}

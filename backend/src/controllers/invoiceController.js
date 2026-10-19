@@ -11,8 +11,10 @@ const isValidObjectId = (id) => {
     return /^[a-fA-F0-9]{24}$/.test(id);
 };
 
+// ============================================
 // @desc    Get all invoices
 // @route   GET /api/invoices
+// ============================================
 exports.getInvoices = async (req, res) => {
     try {
         const invoices = await Invoice.find()
@@ -25,13 +27,14 @@ exports.getInvoices = async (req, res) => {
     }
 };
 
+// ============================================
 // @desc    Get single invoice
 // @route   GET /api/invoices/:id
+// ============================================
 exports.getInvoiceById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // ✅ GUARD: reject invalid IDs immediately — prevents the crash
         if (!isValidObjectId(id)) {
             console.warn(`⚠️ getInvoiceById called with invalid ID: "${id}"`);
             return res.status(400).json({ message: 'Invalid invoice ID' });
@@ -47,27 +50,66 @@ exports.getInvoiceById = async (req, res) => {
     }
 };
 
-// @desc    Create invoice
+// ============================================
+// @desc    Create invoice (with duplicate prevention)
 // @route   POST /api/invoices
+// ============================================
 exports.createInvoice = async (req, res) => {
     try {
-        const { client, items, dueDate, taxRate, notes } = req.body;
+        const { client, items, dueDate, taxRate, notes, idempotencyKey } = req.body;
 
+        // ===== 1. IDEMPOTENCY KEY CHECK =====
+        if (idempotencyKey) {
+            const existing = await Invoice.findOne({ idempotencyKey });
+            if (existing) {
+                console.log(`⚠️ Duplicate invoice blocked (idempotency key)`);
+                return res.status(409).json({
+                    message: `Duplicate invoice detected (${existing.invoiceNumber} was just created).`,
+                    duplicate: true,
+                    existingInvoiceId: existing._id,
+                    existingInvoiceNumber: existing.invoiceNumber
+                });
+            }
+        }
+
+        // ===== 2. 60-SECOND FINGERPRINT CHECK =====
+        const { fingerprint } = require('../utils/idempotency');
+        const invoiceFingerprint = fingerprint({
+            client: String(client),
+            items: items?.map(i => ({ q: i.quantity, p: i.unitPrice, d: i.description })),
+            dueDate
+        });
+
+        const recentDuplicate = await Invoice.findOne({
+            duplicateFingerprint: invoiceFingerprint,
+            createdAt: { $gte: new Date(Date.now() - 60000) },
+            status: { $ne: 'cancelled' }
+        });
+
+        if (recentDuplicate) {
+            console.log(`⚠️ Duplicate invoice blocked (fingerprint: ${recentDuplicate.invoiceNumber})`);
+            return res.status(409).json({
+                message: `Duplicate invoice detected (${recentDuplicate.invoiceNumber} was just created).`,
+                duplicate: true,
+                existingInvoiceId: recentDuplicate._id,
+                existingInvoiceNumber: recentDuplicate.invoiceNumber
+            });
+        }
+
+        // ===== 3. VALIDATION =====
         const clientDoc = await Client.findById(client);
         if (!clientDoc) return res.status(404).json({ message: 'Client not found' });
-
         if (!clientDoc.code) {
             return res.status(400).json({
                 message: 'Client has no code. Please edit the client and add a code first.'
             });
         }
-
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'At least one item is required' });
         }
 
-        const invoiceNumber = await generateNumber('INV', clientDoc.code);
-
+        // ===== 4. CREATE =====
+        const invoiceNumber = await generateNumber('INV', clientDoc.code, req.organization._id);
         const invoice = await Invoice.create({
             invoiceNumber,
             client,
@@ -75,10 +117,13 @@ exports.createInvoice = async (req, res) => {
             dueDate,
             taxRate: taxRate ?? 16,
             notes,
+            idempotencyKey: idempotencyKey || undefined,
+            duplicateFingerprint: invoiceFingerprint,
             createdBy: req.user.id
         });
 
         notify({
+            organizationId: req.organization._id,
             userId: null,
             type: 'invoice_created',
             title: '📄 New Invoice Created',
@@ -95,12 +140,20 @@ exports.createInvoice = async (req, res) => {
         res.status(201).json(invoice);
     } catch (error) {
         console.error(error);
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: 'Duplicate invoice detected',
+                duplicate: true
+            });
+        }
         res.status(400).json({ message: error.message || 'Failed to create invoice' });
     }
 };
 
+// ============================================
 // @desc    Update invoice (limited fields)
 // @route   PUT /api/invoices/:id
+// ============================================
 exports.updateInvoice = async (req, res) => {
     try {
         const { id } = req.params;
@@ -129,8 +182,10 @@ exports.updateInvoice = async (req, res) => {
     }
 };
 
+// ============================================
 // @desc    Cancel invoice (soft delete)
 // @route   DELETE /api/invoices/:id
+// ============================================
 exports.cancelInvoice = async (req, res) => {
     try {
         const { id } = req.params;
@@ -156,8 +211,10 @@ exports.cancelInvoice = async (req, res) => {
     }
 };
 
+// ============================================
 // @desc    Download invoice as PDF
 // @route   GET /api/invoices/:id/pdf
+// ============================================
 exports.downloadInvoicePDF = async (req, res) => {
     try {
         const { id } = req.params;

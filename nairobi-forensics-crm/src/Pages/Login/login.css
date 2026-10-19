@@ -298,6 +298,30 @@
     }
 }
 
+@media screen and (max-width: 320px) {
+    .login-left {
+        padding-inline: 12px;
+    }
+
+    .login-left-content {
+        min-width: 0;
+    }
+
+    .login-left-content h1 {
+        font-size: 1.8rem;
+        overflow-wrap: anywhere;
+    }
+
+    .login-left-content p {
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
+    }
+
+    .login-right {
+        padding-inline: 12px;
+    }
+}
+
 .register-link {
     text-align: center;
     margin-top: 20px;

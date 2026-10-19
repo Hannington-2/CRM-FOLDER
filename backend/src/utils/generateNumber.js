@@ -2,23 +2,19 @@
 const Counter = require('../models/Counter');
 
 /**
- * Generate a formatted document number.
- *
- * Formats:
- *   Invoice:     {clientCode}{6-digit-sequence}       e.g. KRACU000001
- *   Receipt:     RCT-{clientCode}{6-digit-sequence}   e.g. RCT-KRACU000001
- *   Payment:     PAY-{clientCode}{6-digit-sequence}   e.g. PAY-KRACU000001
- *   Credit Note: CRN-{clientCode}{6-digit-sequence}   e.g. CRN-KRACU000001
+ * Generate a formatted document number, scoped per organization.
  */
-const generateNumber = async (type, clientCode = 'GEN') => {
+const generateNumber = async (type, clientCode = 'GEN', organizationId = null) => {
     const cleanCode = String(clientCode).toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const counterKey = `${type.toLowerCase()}-${cleanCode}`;
+
+    // Include organization in the counter key so each org has its own sequence
+    const orgPrefix = organizationId ? `${organizationId}-` : '';
+    const counterKey = `${orgPrefix}${type.toLowerCase()}-${cleanCode}`;
+
     const seq = await Counter.getNextSequence(counterKey);
     const padded = String(seq).padStart(6, '0');
 
-    if (type === 'INV') {
-        return `${cleanCode}${padded}`;
-    }
+    if (type === 'INV') return `${cleanCode}${padded}`;
     return `${type}-${cleanCode}${padded}`;
 };
 

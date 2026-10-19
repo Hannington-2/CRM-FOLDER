@@ -24,7 +24,7 @@
 
 .payments-page .invoice-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -168,5 +168,67 @@
     .payments-page .data-table th, .payments-page .data-table td {
         padding: 10px 12px;
         font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .payments-page .page-header {
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .payments-page .page-header > div {
+        min-width: 0;
+    }
+
+    .payments-page .filter-select {
+        flex: 1 1 150px;
+        min-width: 0;
+    }
+
+    .payments-page .result-count {
+        flex-basis: 100%;
+    }
+}
+
+.btn-export-excel {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 2px solid #1F8A4C;
+    background: #fff;
+    color: #1F8A4C;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-export-excel:hover:not(:disabled) {
+    background: #1F8A4C;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(31, 138, 76, 0.35);
+}
+
+.btn-export-excel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 640px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .btn-export-excel {
+        width: 100%;
+        justify-content: center;
     }
 }

@@ -89,7 +89,7 @@ const IssueCreditNoteModal = ({ invoice, onClose, onSuccess }) => {
                             Invoice {invoice.invoiceNumber}
                         </span>
                     </div>
-                    <button className="close-btn" onClick={onClose}>
+                    <button className="close-btn" onClick={onClose} aria-label="Close credit note form">
                         <FaTimes />
                     </button>
                 </div>

@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../../Components/Sidebar/Sidebar';
 import Topbar from '../../Components/Topbar/Topbar';
 import FloatingClock from '../../Components/FloatingClock/FloatingClock';
+import TourPrompt from '../../Components/TourPrompt/TourPrompt';
 import './dashboard-layout.css';
 
 const DashboardLayout = () => {
@@ -17,8 +18,8 @@ const DashboardLayout = () => {
                 <Outlet />
             </div>
 
-            {/* Floating draggable clock */}
             <FloatingClock />
+            <TourPrompt />
         </div>
     );
 };

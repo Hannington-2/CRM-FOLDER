@@ -1,8 +1,11 @@
 // src/Pages/Payments/payments.jsx
 import { useState, useEffect } from 'react';
-import { FaSearch, FaMoneyBillWave, FaEye } from 'react-icons/fa';
+import { FaSearch, FaMoneyBillWave } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
 import './payments.css';
+import { FaFileExcel } from 'react-icons/fa';
+import { downloadExcel } from '../../utils/excelDownload';
+import { useNotifications } from '../../context/NotificationContext';
 
 const Payments = () => {
     const [payments, setPayments] = useState([]);
@@ -11,6 +14,7 @@ const Payments = () => {
     const [methodFilter, setMethodFilter] = useState('all');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { showToast } = useNotifications();
 
     const load = async () => {
         try {
@@ -53,14 +57,45 @@ const Payments = () => {
         });
 
     const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+    const [exporting, setExporting] = useState(false);
+
+    const handleExportAll = async () => {
+        setExporting(true);
+        try {
+            await downloadExcel(
+                '/exports/payments',
+                `All-Clients-Payments-${new Date().toISOString().split('T')[0]}.xlsx`
+            );
+            showToast({
+                type: 'ui_success',
+                title: 'Excel exported',
+                message: 'The payments report was downloaded.'
+            });
+        } catch (err) {
+            showToast({
+                type: 'ui_error',
+                title: 'Export failed',
+                message: err.message || 'Could not export to Excel'
+            });
+        } finally {
+            setExporting(false);
+        }
+    };
 
     return (
         <div className="payments-page">
-            <div className="page-header">
-                <div>
-                    <h1>Payments</h1>
-                    <p>All payments recorded across invoices</p>
-                </div>
+                <div className="page-header">
+                    <div>
+                        <h1>Payments</h1>
+                        <p>All payments recorded across invoices</p>
+                    </div>
+                    <button
+                        className="btn-export-excel"
+                        onClick={handleExportAll}
+                        disabled={exporting}
+                    >
+                        <FaFileExcel /> {exporting ? 'Generating...' : 'Export to Excel'}
+                    </button>
             </div>
 
             {/* Summary */}

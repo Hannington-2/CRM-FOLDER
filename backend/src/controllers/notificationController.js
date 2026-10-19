@@ -1,5 +1,6 @@
 // backend/src/controllers/notificationController.js
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 
 // @desc    Get notifications
 // @route   GET /api/notifications
@@ -95,9 +96,21 @@ exports.clearAll = async (req, res) => {
 exports.createNotification = async (req, res) => {
     try {
         const { userId, type, title, message, link, data } = req.body;
+        let recipientId = null;
+        if (userId) {
+            const recipient = await User.findOne({
+                _id: userId,
+                organization: req.organization._id
+            }).select('_id');
+            if (!recipient) {
+                return res.status(404).json({ message: 'Notification recipient not found' });
+            }
+            recipientId = recipient._id;
+        }
 
         const notification = await Notification.create({
-            user: userId || null,
+            organization: req.organization._id,
+            user: recipientId,
             type: type || 'system',
             title,
             message,
@@ -106,10 +119,10 @@ exports.createNotification = async (req, res) => {
         });
 
         // Send via socket if available
-        if (userId && global.sendNotificationToUser) {
-            global.sendNotificationToUser(userId, notification);
+        if (recipientId && global.sendNotificationToUser) {
+            global.sendNotificationToUser(recipientId, notification);
         } else if (global.broadcastNotification) {
-            global.broadcastNotification(notification);
+            global.broadcastNotification(notification, req.organization._id);
         }
 
         res.status(201).json(notification);

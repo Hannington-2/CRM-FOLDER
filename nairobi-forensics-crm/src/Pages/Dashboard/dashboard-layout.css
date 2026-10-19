@@ -2,7 +2,8 @@
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background: #f9fafb;
+    min-height: 100dvh;
+    background: #f4f6fa;
 }
 
 .dashboard-main {
@@ -11,12 +12,15 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .dashboard-main > :not(.topbar) {
     width: 100%;
     max-width: 2400px;
     margin-inline: auto;
+    flex: 1 0 auto;
 }
 
 @media (max-width: 900px) {

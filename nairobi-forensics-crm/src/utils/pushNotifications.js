@@ -33,7 +33,7 @@ const urlBase64ToUint8Array = (base64String) => {
 
 export const registerServiceWorker = async () => {
     if (!('serviceWorker' in navigator)) {
-        console.warn('⚠️ Service Workers not supported');
+        console.warn(' Service Workers not supported');
         return null;
     }
 
@@ -41,10 +41,10 @@ export const registerServiceWorker = async () => {
         const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/'
         });
-        console.log('✅ Service Worker registered:', registration.scope);
+        console.log(' Service Worker registered:', registration.scope);
         return registration;
     } catch (err) {
-        console.error('❌ SW registration failed:', err);
+        console.error(' Service Worker registration failed:', err);
         return null;
     }
 };
@@ -61,7 +61,7 @@ export const getPermissionState = () => {
 export const requestNotificationPermission = async () => {
     if (!('Notification' in window)) return 'unsupported';
     const permission = await Notification.requestPermission();
-    console.log('🔔 Permission:', permission);
+    console.log('Permission:', permission);
     return permission;
 };
 
@@ -76,14 +76,14 @@ const waitForServiceWorkerReady = async (timeout = 10000) => {
 
     // If already has an active controller, we're good
     if (navigator.serviceWorker.controller) {
-        console.log('✅ SW already controlling');
+        console.log(' SW already controlling');
         return navigator.serviceWorker.controller;
     }
 
     // Otherwise, wait for the ready promise with a timeout
     return Promise.race([
         navigator.serviceWorker.ready.then(() => {
-            console.log('✅ SW ready');
+            console.log(' SW ready');
             return navigator.serviceWorker.controller;
         }),
         new Promise((_, reject) =>
@@ -144,7 +144,7 @@ export const subscribeToPush = async () => {
     // 3. Make sure the service worker is registered
     let registration = await navigator.serviceWorker.getRegistration();
     if (!registration) {
-        console.log('📝 Registering SW...');
+        console.log(' Registering SW...');
         registration = await registerServiceWorker();
         if (!registration) {
             throw new Error('Could not register service worker.');
@@ -162,18 +162,18 @@ export const subscribeToPush = async () => {
 
     // 7. Subscribe if none exists
     if (!subscription) {
-        console.log('📱 Creating new push subscription...');
+        console.log('Creating new push subscription...');
         const vapidKey = await getVapidKey();
-        console.log('🔑 VAPID key length:', vapidKey?.length);
+        console.log('VAPID key length:', vapidKey?.length);
 
         try {
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(vapidKey)
             });
-            console.log('✅ Push subscription created');
+            console.log(' Push subscription created');
         } catch (err) {
-            console.error('❌ pushManager.subscribe failed:');
+            console.error(' pushManager.subscribe failed:');
             console.error('  Name:', err.name);
             console.error('  Message:', err.message);
             console.error('  Full error:', err);
@@ -199,7 +199,7 @@ export const subscribeToPush = async () => {
             throw new Error('Failed to subscribe to push: ' + err.message, { cause: err });
         }
     } else {
-        console.log('📱 Existing subscription found');
+        console.log(' Existing subscription found');
     }
 
     // 8. Send the subscription to our backend
@@ -221,16 +221,16 @@ export const subscribeToPush = async () => {
             }
         });
 
-        console.log('✅ Push subscription saved to backend');
+        console.log(' Push subscription saved to backend');
         return subscription;
     } catch (err) {
-        console.error('❌ Backend save failed:', err);
+        console.error(' Backend save failed:', err);
 
         // Roll back the browser subscription so the next attempt starts fresh
         try {
             await subscription.unsubscribe();
         } catch (rollbackErr) {
-            console.warn('⚠️ Rollback unsubscribe failed:', rollbackErr);
+            console.warn(' Rollback unsubscribe failed:', rollbackErr);
         }
 
         throw new Error(

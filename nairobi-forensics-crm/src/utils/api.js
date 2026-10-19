@@ -46,7 +46,6 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     // Handle 401 — session expired
     if (response.status === 401) {
-        localStorage.removeItem('user');
         if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login';
         }

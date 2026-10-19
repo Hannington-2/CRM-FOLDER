@@ -16,20 +16,12 @@ export const useAuth = () => {
 };
 
 // ===== Initial state from localStorage (user object only — NOT the token) =====
-const getInitialUser = () => {
-    const u = localStorage.getItem('user');
-    try {
-        return u ? JSON.parse(u) : null;
-    } catch {
-        return null;
-    }
-};
-
 // ===== AuthProvider Component =====
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(getInitialUser);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showWarning, setShowWarning] = useState(false);
+    const [logoutReason, setLogoutReason] = useState(null);
 
     const logoutTimerRef = useRef(null);
     const warningTimerRef = useRef(null);
@@ -37,14 +29,18 @@ export const AuthProvider = ({ children }) => {
 
     // ===== Verify session on mount (cookie-based) =====
     useEffect(() => {
+        try {
+            localStorage.removeItem('user');
+        } catch {
+            // Storage may be unavailable; auth relies on the HTTP-only cookie.
+        }
+
         const verify = async () => {
             try {
                 const data = await apiFetch('/auth/me');
                 setUser(data);
-                localStorage.setItem('user', JSON.stringify(data));
             } catch {
                 setUser(null);
-                localStorage.removeItem('user');
             } finally {
                 setLoading(false);
             }
@@ -69,21 +65,14 @@ export const AuthProvider = ({ children }) => {
             activityCleanupRef.current = null;
         }
 
+        setLogoutReason(reason === 'timeout' ? 'timeout' : null);
+        setUser(null);
+        setShowWarning(false);
+
         try {
             await publicFetch('/auth/logout', { method: 'POST' });
         } catch {
             // Best effort — backend may not be reachable
-        }
-
-        localStorage.removeItem('user');
-        setUser(null);
-        setShowWarning(false);
-
-        if (reason === 'timeout') {
-            sessionStorage.setItem(
-                'logout_reason',
-                'Your session expired due to inactivity. Please log in again.'
-            );
         }
     }, [clearTimers]);
 
@@ -136,7 +125,7 @@ export const AuthProvider = ({ children }) => {
 
     // ===== Login — called from Login page after successful auth =====
     const login = (userData) => {
-        localStorage.setItem('user', JSON.stringify(userData));
+        setLogoutReason(null);
         setUser(userData);
     };
 
@@ -150,6 +139,7 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider
             value={{
                 user,
+                logoutReason,
                 login,
                 logout,
                 loading,

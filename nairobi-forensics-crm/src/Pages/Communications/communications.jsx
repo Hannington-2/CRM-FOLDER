@@ -6,6 +6,7 @@ import {
     FaBell, FaBullhorn, FaFileInvoiceDollar, FaReceipt
 } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { useNotifications } from '../../context/NotificationContext';
 import './communications.css';
 
 const Communications = () => {
@@ -156,12 +157,17 @@ const SendPanel = ({ clients }) => {
     const [clientId, setClientId] = useState('');
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
+    const { showToast } = useNotifications();
 
     const selectedClient = clients.find(c => c._id === clientId);
 
     const handleSend = (e) => {
         e.preventDefault();
-        alert('Communications will activate once provider verification is complete.');
+        showToast({
+            type: 'ui_info',
+            title: 'Messaging is not active yet',
+            message: 'Communications will be available once provider verification is complete.'
+        });
     };
 
     return (

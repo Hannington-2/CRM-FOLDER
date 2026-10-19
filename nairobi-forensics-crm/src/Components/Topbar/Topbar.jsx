@@ -12,7 +12,7 @@ const Topbar = ({ onMenuClick }) => {
     return (
         <>
             <header className="topbar">
-                <button className="menu-toggle" onClick={onMenuClick}>
+                <button className="menu-toggle" onClick={onMenuClick} aria-label="Open navigation" data-tooltip="Open navigation">
                     <FaBars />
                 </button>
 

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPrint, FaMoneyBillWave, FaDownload, FaMinusCircle } from 'react-icons/fa';
 import { apiFetch } from '../../utils/api';
+import { useNotifications } from '../../context/NotificationContext';
 import { downloadPDF } from '../../utils/pdfDownload';
 import PaymentModal from './PaymentModal';
 import IssueCreditNoteModal from './IssueCreditNoteModal';
@@ -22,6 +23,7 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
     const [paymentOpen, setPaymentOpen] = useState(false);
     const [creditOpen, setCreditOpen] = useState(false);
     const [downloading, setDownloading] = useState(false);
+    const { showToast } = useNotifications();
 
     // ====== LOAD INVOICE + RELATED DATA ======
     const load = async () => {
@@ -89,6 +91,9 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                 `/invoices/${invoiceId}/pdf`,
                 `${invoice.invoiceNumber || 'invoice'}.pdf`
             );
+            showToast({ type: 'ui_success', title: 'Download ready', message: 'Your invoice PDF has been downloaded.' });
+        } catch (err) {
+            showToast({ type: 'ui_error', title: 'Download failed', message: err.message });
         } finally {
             setDownloading(false);
         }
@@ -164,14 +169,14 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                                 className="icon-action"
                                 onClick={handleDownloadPDF}
                                 disabled={downloading}
-                                title="Download PDF"
+                                aria-label="Download invoice PDF"
                             >
                                 <FaDownload />
                             </button>
-                            <button className="icon-action" onClick={handlePrint} title="Print">
+                            <button className="icon-action" onClick={handlePrint} aria-label="Print invoice">
                                 <FaPrint />
                             </button>
-                            <button className="close-btn" onClick={onClose}>
+                            <button className="close-btn" onClick={onClose} aria-label="Close invoice details">
                                 <FaTimes />
                             </button>
                         </div>
@@ -204,26 +209,28 @@ const ViewInvoiceModal = ({ invoiceId, onClose, onRefresh }) => {
                         </div>
 
                         {/* Items Table */}
-                        <table className="invoice-items">
-                            <thead>
-                                <tr>
-                                    <th>Description</th>
-                                    <th style={{ textAlign: 'right' }}>Qty</th>
-                                    <th style={{ textAlign: 'right' }}>Unit Price</th>
-                                    <th style={{ textAlign: 'right' }}>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(invoice.items || []).map((item, i) => (
-                                    <tr key={i}>
-                                        <td>{item.description}</td>
-                                        <td style={{ textAlign: 'right' }}>{item.quantity}</td>
-                                        <td style={{ textAlign: 'right' }}>{formatKES(item.unitPrice)}</td>
-                                        <td style={{ textAlign: 'right' }}>{formatKES(item.amount)}</td>
+                        <div className="invoice-items-wrap">
+                            <table className="invoice-items">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th style={{ textAlign: 'right' }}>Qty</th>
+                                        <th style={{ textAlign: 'right' }}>Unit Price</th>
+                                        <th style={{ textAlign: 'right' }}>Amount</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {(invoice.items || []).map((item, i) => (
+                                        <tr key={i}>
+                                            <td>{item.description}</td>
+                                            <td style={{ textAlign: 'right' }}>{item.quantity}</td>
+                                            <td style={{ textAlign: 'right' }}>{formatKES(item.unitPrice)}</td>
+                                            <td style={{ textAlign: 'right' }}>{formatKES(item.amount)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
                         {/* Totals */}
                         <div className="invoice-totals">

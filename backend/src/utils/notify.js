@@ -1,6 +1,7 @@
 // backend/src/utils/notify.js
 const Notification = require('../models/Notification');
-const { sendPushToAllStaff } = require('../services/webPushService');
+const { sendPushToOrganization } = require('../services/webPushService');
+const { getOrganizationId } = require('./organizationContext');
 
 /**
  * Create a notification and deliver it via:
@@ -16,10 +17,16 @@ const { sendPushToAllStaff } = require('../services/webPushService');
  * @param {string} [opts.link] - frontend URL to navigate to on click
  * @param {Object} [opts.data] - extra payload
  */
-const notify = async ({ userId = null, type, title, message, link, data }) => {
+const notify = async ({ organizationId, userId = null, type, title, message, link, data }) => {
     try {
+        const scopedOrganizationId = organizationId || getOrganizationId();
+        if (!scopedOrganizationId) {
+            throw new Error('Cannot create a notification without an organization');
+        }
+
         // 1. Save to DB
         const notification = await Notification.create({
+            organization: scopedOrganizationId,
             user: userId,
             type,
             title,
@@ -32,12 +39,12 @@ const notify = async ({ userId = null, type, title, message, link, data }) => {
         if (userId && global.sendNotificationToUser) {
             global.sendNotificationToUser(userId, notification);
         } else if (global.broadcastNotification) {
-            global.broadcastNotification(notification);
+            global.broadcastNotification(notification, scopedOrganizationId);
         }
 
         // 3. Web Push — works even when app is closed / logged out
         try {
-            const result = await sendPushToAllStaff({
+            const result = await sendPushToOrganization(scopedOrganizationId, {
                 title,
                 body: message,
                 icon: '/icons/icon-192.png',
