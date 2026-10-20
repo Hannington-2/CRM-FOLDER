@@ -14,6 +14,7 @@ const connectDB = require('./src/config/db');
 const { sanitizeInput } = require('./src/middleware/security');
 const { apiLimiter } = require('./src/middleware/rateLimiter');
 const { verifyCsrf } = require('./src/middleware/csrf');
+
 // ===== REGISTER ALL MODELS =====
 require('./src/models/Organization');
 require('./src/models/User');
@@ -73,7 +74,6 @@ const connectedUsers = new Map();
 const jwt = require('jsonwebtoken');
 io.use((socket, next) => {
     try {
-        // Parse cookies from the socket handshake
         const cookieHeader = socket.handshake.headers.cookie || '';
         const cookies = Object.fromEntries(
             cookieHeader.split('; ').map(c => {
@@ -101,16 +101,14 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('🔌 Client connected:', socket.id, '— User:', socket.userId);
+    console.log(' Client connected:', socket.id, '— User:', socket.userId);
 
-    // Auto-register from authenticated socket
     if (socket.userId) {
         socket.join(`organization:${socket.organizationId}`);
         connectedUsers.set(String(socket.userId), socket.id);
         console.log(`👤 User ${socket.userId} auto-registered with socket ${socket.id}`);
     }
 
-    // Legacy register event (kept for compatibility)
     socket.on('register', (userId) => {
         if (String(userId) === String(socket.userId)) {
             connectedUsers.set(String(userId), socket.id);
@@ -151,30 +149,10 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                "'unsafe-eval'",
-                "https://cdn.jsdelivr.net",
-                "https://unpkg.com"
-            ],
-            styleSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                "https://fonts.googleapis.com",
-                "https://cdn.jsdelivr.net"
-            ],
-            fontSrc: [
-                "'self'",
-                "https://fonts.gstatic.com",
-                "data:"
-            ],
-            imgSrc: [
-                "'self'",
-                "data:",
-                "blob:",
-                "https:"
-            ],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
             connectSrc: [
                 "'self'",
                 ...ALLOWED_ORIGINS,
@@ -212,7 +190,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// ===== CORS =====
+// ===== CORS (MUST BE BEFORE CSRF) =====
 app.use(cors({
     origin: ALLOWED_ORIGINS,
     credentials: true,
@@ -227,7 +205,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ===== COOKIE PARSER =====
 app.use(cookieParser());
-app.use(verifyCsrf);
 
 // ===== SECURITY MIDDLEWARE =====
 app.use(hpp());
@@ -236,6 +213,10 @@ app.set('trust proxy', 1);
 
 // ===== GLOBAL RATE LIMITING =====
 app.use('/api', apiLimiter);
+
+// ===== CSRF VERIFICATION (Only for API routes, AFTER CORS) =====
+// This ensures OPTIONS preflight requests are NEVER blocked by CSRF
+app.use('/api', verifyCsrf);
 
 // ===== ROUTES =====
 app.use('/api/auth', authRoutes);
