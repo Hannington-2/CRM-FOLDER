@@ -4,22 +4,25 @@ const crypto = require('crypto');
 const CSRF_COOKIE_NAME = 'nf_csrf';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 
+// Helper to get consistent cookie settings
+const getCsrfCookieOptions = () => {
+    const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+    return {
+        httpOnly: false,        // Must be readable by JS to send back in header
+        secure: isProd,         // Requires HTTPS in production
+        sameSite: isProd ? 'none' : 'lax', // 'none' allows cross-site cookie sending
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/'
+    };
+};
+
 /**
  * Generate a CSRF token and set it as a cookie.
  * Called on login and on app init.
  */
 exports.issueCsrfToken = (req, res, next) => {
-    // Generate a random token
     const token = crypto.randomBytes(32).toString('hex');
-
-    res.cookie(CSRF_COOKIE_NAME, token, {
-        httpOnly: false,        // Must be readable by JS to send back in header
-        secure: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true',
-        sameSite: process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' ? 'none' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
-    });
-
+    res.cookie(CSRF_COOKIE_NAME, token, getCsrfCookieOptions());
     res.setHeader('X-CSRF-Token', token);
     next();
 };
@@ -29,16 +32,19 @@ exports.issueCsrfToken = (req, res, next) => {
  * Skips GET, HEAD, OPTIONS.
  */
 exports.verifyCsrf = (req, res, next) => {
-    // Skip safe methods
+    // 1. Skip safe methods (Browser preflight OPTIONS will pass through here)
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
         return next();
     }
 
-    // Skip auth routes — login/register don't have a token yet
-    if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
+    // 2. Skip auth routes.
+    // Note: Because this middleware is mounted on '/api', 
+    // Express strips '/api' from req.path (e.g., it becomes '/auth/login')
+    if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/register')) {
         return next();
     }
 
+    // 3. Validate tokens for all other state-changing routes
     const cookieToken = req.cookies[CSRF_COOKIE_NAME];
     const headerToken = req.get(CSRF_HEADER_NAME);
 
